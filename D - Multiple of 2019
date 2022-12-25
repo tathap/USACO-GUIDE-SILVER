@@ -1,0 +1,179 @@
+D - Multiple of 2019
+AtCoder Beginner Contest 164
+
+Code:
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+/*
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp> // Common file
+#include <ext/pb_ds/tree_policy.hpp> // Including tree_order_statistics_node_update
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+*/
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e6+5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9+7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll ___lcm(ll a, ll b) {
+    ll prod = a*b;
+    return (prod/__gcd(a, b));
+}
+ 
+ll ceil(ll a, ll b) {
+    if (a == ZER) return a;
+    return (a - ONE)/b + ONE;
+}
+ 
+ll fact[MAXN];
+void precompute()
+{
+    fact[0] = 1;
+    for (ll i = 1; i < MAXN; i++) {
+        fact[i] = (i * fact[i - 1]) % MOD;
+    }
+}
+
+ll powmod(ll a, ll b){
+    a %= MOD;
+    if (a == 0) return 0;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+//calculates the inverse of a number mod MOD
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+ 
+ll nCk(ll n, ll k) {
+    return ((fact[n] * inv(fact[k]) % MOD) * inv(fact[n-k])) % MOD;
+}
+
+ll nPk(ll n, ll k) {
+    return ((fact[n]%MOD * inv(fact[n-k]%MOD)%MOD)%MOD);
+}
+
+//If a subarray aL . . . aR works, then aL . . . aN as an integer must be congruent to aR+1 . . . aN as an integer modulo 2019. If these conditions are true, then aL . . . aR as an integer times some power of 10 will be congruent to 0 modulo 2019. However, since 2019 and 10 have no common factors, aL . . . aR as an integer must itself be congruent to 0 modulo 2019. In order to prove this to yourself, just do some math.
+
+void solve()
+{
+    string s;
+    cin >> s;
+    
+    ll n = s.length();
+    ll suffix[n+1]; suffix[n] = 0; //suffix[i] will maintain the remainder modulo 2019 of the ith suffix if treated as an integer.
+    
+    //Compute the suffixes modulo 2019
+    ll pow10 = 1;
+    for (ll i = n-1; i >= 0; i--) {
+        ll digit = s[i] - '0';
+        suffix[i] = (((pow10%2019) * (digit%2019))%2019 + (suffix[i+1]%2019))%2019;
+        pow10 = (10 * pow10)%2019;
+    }
+    
+    //Store all the suffixes
+    map<ll, ll> mp;
+    for (ll i = 0; i <= n; i++) {
+        mp[suffix[i]]++;
+    }
+    
+    ll ans = 0;
+    for (ll i = 0; i < n; i++) {
+        mp[suffix[i]]--;
+        if (mp[suffix[i]] == 0) {
+            mp.erase(suffix[i]);
+        }
+        
+        if (mp.find(suffix[i]) == mp.end()) {
+            //
+        } else {
+            ans += mp[suffix[i]];
+        }
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*freopen("maxcross.in", "r", stdin);
+    freopen("maxcross.out", "w", stdout);
+    */
+    ll t = 1;
+    //cin >> t;
+        
+    while (t--) {
+        solve();
+    }
+}
