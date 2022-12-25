@@ -1,0 +1,177 @@
+C - GCD on Blackboard 
+AtCoder Beginner Contest 125
+
+Code:
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+/*
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp> // Common file
+#include <ext/pb_ds/tree_policy.hpp> // Including tree_order_statistics_node_update
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+*/
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e6+5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9+7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll ___lcm(ll a, ll b) {
+    ll prod = a*b;
+    return (prod/__gcd(a, b));
+}
+ 
+ll ceil(ll a, ll b) {
+    if (a == ZER) return a;
+    return (a - ONE)/b + ONE;
+}
+ 
+ll fact[MAXN];
+void precompute()
+{
+    fact[0] = 1;
+    for (ll i = 1; i < MAXN; i++) {
+        fact[i] = (i * fact[i - 1]) % MOD;
+    }
+}
+
+ll powmod(ll a, ll b){
+    a %= MOD;
+    if (a == 0) return 0;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+//calculates the inverse of a number mod MOD
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+ 
+ll nCk(ll n, ll k) {
+    return ((fact[n] * inv(fact[k]) % MOD) * inv(fact[n-k])) % MOD;
+}
+
+ll nPk(ll n, ll k) {
+    return ((fact[n]%MOD * inv(fact[n-k]%MOD)%MOD)%MOD);
+}
+
+void solve()
+{
+    ll n;
+    cin >> n;
+    
+    ll a[n];
+    
+    //ps1 stores the prefix gcds while ps2 stores the suffix gcds.
+    ll ps1[n], ps2[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> a[i];
+        if (i == 0) {
+            ps1[i] = a[i];
+        } else {
+            ps1[i] = __gcd(ps1[i-1], a[i]);
+        }
+    }
+    for (ll i = n-1; i > 0; i--) {
+        if (i == n-1) {
+            ps2[i] = a[i];
+        } else {
+            ps2[i] = __gcd(ps2[i+1], a[i]);
+        }
+    }
+    
+    //Remove each number at a time and compute the maximum gcd of the prefix before it and the suffix after it
+    ll ans = 1;
+    for (ll i = 0; i < n; i++) {
+        if (i == 0) {
+            ans = max(ans, ps2[1]);
+        } else if (i == n-1) {
+            ans = max(ans, ps1[n-2]);
+        } else {
+            ans = max(ans, __gcd(ps1[i-1], ps2[i+1]));
+        }
+    }
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*freopen("maxcross.in", "r", stdin);
+    freopen("maxcross.out", "w", stdout);
+    */
+    ll t = 1;
+    //cin >> t;
+        
+    while (t--) {
+        solve();
+    }
+}
