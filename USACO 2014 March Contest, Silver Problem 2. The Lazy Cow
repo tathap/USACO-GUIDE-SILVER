@@ -1,0 +1,184 @@
+USACO 2014 March Contest, Silver
+Problem 2. The Lazy Cow
+
+Code:
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+/*
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp> // Common file
+#include <ext/pb_ds/tree_policy.hpp> // Including tree_order_statistics_node_update
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+*/
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e6+5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9+7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll ___lcm(ll a, ll b) {
+    ll prod = a*b;
+    return (prod/__gcd(a, b));
+}
+ 
+ll ceil(ll a, ll b) {
+    if (a == ZER) return a;
+    return (a - ONE)/b + ONE;
+}
+ 
+ll fact[MAXN];
+void precompute()
+{
+    fact[0] = 1;
+    for (ll i = 1; i < MAXN; i++) {
+        fact[i] = (i * fact[i - 1]) % MOD;
+    }
+}
+
+ll powmod(ll a, ll b){
+    a %= MOD;
+    if (a == 0) return 0;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+//calculates the inverse of a number mod MOD
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+ 
+ll nCk(ll n, ll k) {
+    return ((fact[n] * inv(fact[k]) % MOD) * inv(fact[n-k])) % MOD;
+}
+
+ll nPk(ll n, ll k) {
+    return ((fact[n]%MOD * inv(fact[n-k]%MOD)%MOD)%MOD);
+}
+
+//Create a 2D prefix sum array. Then try out each of the n^2 elements. Notice that the elements that a certain element can reach from k steps form a diamond shape. Take O(n) time to process that diamond shape using prefix sums and you have a O(N^3) solution that will pass
+void solve()
+{
+    ll n, k;
+    cin >> n >> k;
+    
+    ll grid[n][n];
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < n; j++) {
+            cin >> grid[i][j];
+        }
+    }
+    
+    ll ps[n+1][n+1];
+    for (ll i = 0; i <= n; i++) {
+        for (ll j = 0; j <= n; j++) {
+            ps[i][j] = 0;
+        }
+    }
+    
+    for (ll i = 1; i <= n; i++) {
+        for (ll j = 1; j <= n; j++) {
+            ps[i][j] = ps[i-1][j] + ps[i][j-1] - ps[i-1][j-1] + grid[i-1][j-1];
+        }
+    }
+    
+    //Iterate through each element. For the current element, do another O(n) sweep plus prefix sums to find the sum of the diamond shape
+    ll ans = 0;
+    for (ll row = 0; row < n; row++) {
+        for (ll col = 0; col < n; col++) {
+            ll tans = 0;
+            for (ll col2 = max(col-k, 0); col2 <= min(col+k, n-1); col2++) {
+                ll dist = k-abs(col2 - col);
+                ll row1 = max(row-dist, 0);
+                ll row2 = min(row + dist, n-1);
+                tans += (ps[row2+1][col2+1] - ps[row1][col2+1] - ps[row2+1][col2] + ps[row1][col2]);
+            }
+            ans = max(ans, tans);
+        }
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("lazy.in", "r", stdin);
+    freopen("lazy.out", "w", stdout);
+    
+    ll t = 1;
+    //cin >> t;
+        
+    while (t--) {
+        solve();
+    }
+}
+
