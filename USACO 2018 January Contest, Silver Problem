@@ -1,0 +1,214 @@
+USACO 2018 January Contest, Silver
+Problem 2. Rental Service
+
+Code:
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+/*
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp> // Common file
+#include <ext/pb_ds/tree_policy.hpp> // Including tree_order_statistics_node_update
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+*/
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e6+5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9+7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll ___lcm(ll a, ll b) {
+    ll prod = a*b;
+    return (prod/__gcd(a, b));
+}
+ 
+ll ceil(ll a, ll b) {
+    if (a == ZER) return a;
+    return (a - ONE)/b + ONE;
+}
+ 
+ll fact[MAXN];
+void precompute()
+{
+    fact[0] = 1;
+    for (ll i = 1; i < MAXN; i++) {
+        fact[i] = (i * fact[i - 1]) % MOD;
+    }
+}
+
+ll powmod(ll a, ll b){
+    a %= MOD;
+    if (a == 0) return 0;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+//calculates the inverse of a number mod MOD
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+ 
+ll nCk(ll n, ll k) {
+    return ((fact[n] * inv(fact[k]) % MOD) * inv(fact[n-k])) % MOD;
+}
+
+ll nPk(ll n, ll k) {
+    return ((fact[n]%MOD * inv(fact[n-k]%MOD)%MOD)%MOD);
+}
+
+struct Store{
+    ll q, p;
+};
+
+bool comp(Store s1, Store s2) {
+    return s1.p > s2.p;
+}
+
+bool comp2(ll a1, ll a2) {
+    return a1 > a2;
+}
+
+//Observation: If we sort the cows from higher to lower milk values, its always to optimal to milk some prefix of the cows and rent out the remaining suffix. So we will just iterate over this boundary and use precomputation to compute the answer for each prefix/suffix boundary in O(1)
+void solve()
+{
+    ll n, m, r;
+    cin >> n >> m >> r;
+    
+    //Sort cows by higher milk values to lower milk values
+    ll cow[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> cow[i];
+    }
+    sort(cow, cow+n, comp2);
+    
+    //Sort stores by higher milk prices to lower milk prices
+    Store store[m];
+    for (ll i = 0; i < m; i++) {
+        cin >> store[i].q >> store[i].p;
+    }
+    sort(store, store+m, comp);
+    
+    //Sort the neighbours by higher prices to lower prices
+    ll neighbour[r];
+    for (ll i = 0; i < r; i++) {
+        cin >> neighbour[i];
+    }
+    sort(neighbour, neighbour+r, comp2);
+        
+    //We will use psum[i] to compute the sum of the prices of the first i neighbours
+    ll psum[r+1]; psum[0] = 0;
+    for (ll i = 0; i < r; i++) {
+        psum[i+1] = psum[i] + neighbour[i];
+    }
+    
+    //Maintain the bestans
+    ll bestans = 0;
+    ll index = 0; ll total = 0; ll cans = 0; //Index will store the current store we're on, total will maintain the total amount of milk we can use, and cans will maintain the current amount of money used from milking the first i cows
+    for (ll i = 0; i <= n; i++) { //i is the number of cows such that the first i will be milked and the last n-i will be rented
+        if (i == 0) {
+            //Since we arent' milking any cows, rent them all out
+            bestans = max(bestans, psum[min(n, r)]);
+        } else {
+            //Update total to include the amount of the current cow's milk and try to use up this total amount of milk on the most valuable stores
+            total += cow[i-1];
+            while (total != 0 && index < m) {
+                ll common = min(total, store[index].q);
+                total -= common;
+                store[index].q -= common;
+                cans += (common * store[index].p);
+                if (store[index].q == 0) {
+                    index++;
+                }
+            }
+            
+            //The answer is the amount of money from milking the first i cows and renting as many of the remaining n-i cows as possible
+            bestans = max(bestans, cans + psum[min(n-i, r)]);
+        }
+    }
+    
+    cout << bestans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("rental.in", "r", stdin);
+    freopen("rental.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+        
+    while (t--) {
+        solve();
+    }
+}
+
