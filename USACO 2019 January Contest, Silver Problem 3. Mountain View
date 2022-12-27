@@ -1,0 +1,193 @@
+USACO 2019 January Contest, Silver
+Problem 3. Mountain View
+
+Code:
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+/*
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp> // Common file
+#include <ext/pb_ds/tree_policy.hpp> // Including tree_order_statistics_node_update
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+*/
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e6+5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9+7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll ___lcm(ll a, ll b) {
+    ll prod = a*b;
+    return (prod/__gcd(a, b));
+}
+ 
+ll ceil(ll a, ll b) {
+    if (a == ZER) return a;
+    return (a - ONE)/b + ONE;
+}
+ 
+ll fact[MAXN];
+void precompute()
+{
+    fact[0] = 1;
+    for (ll i = 1; i < MAXN; i++) {
+        fact[i] = (i * fact[i - 1]) % MOD;
+    }
+}
+
+ll powmod(ll a, ll b){
+    a %= MOD;
+    if (a == 0) return 0;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+//calculates the inverse of a number mod MOD
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+ 
+ll nCk(ll n, ll k) {
+    return ((fact[n] * inv(fact[k]) % MOD) * inv(fact[n-k])) % MOD;
+}
+
+ll nPk(ll n, ll k) {
+    return ((fact[n]%MOD * inv(fact[n-k]%MOD)%MOD)%MOD);
+}
+
+//Each peak is uniquely identifiable by its leftmost intersection with the x-axis and its height
+struct Peak{
+    ll x, height;
+};
+
+//We will sort by leftmost intersection with the x-axis. However if 2 peaks have the same intersection, sort by the greater height
+bool comp(Peak p1, Peak p2) {
+    if (p1.x == p2.x) {
+        return p1.height > p2.height;
+    }
+    return p1.x < p2.x;
+}
+
+void solve()
+{
+    ll n;
+    cin >> n;
+    
+    Peak peak[n];
+    for (ll i = 0; i < n; i++) {
+        ll a, b;
+        cin >> a >> b;
+        
+        //Math
+        peak[i].x = a - b;
+        peak[i].height = b;
+    }
+    
+    sort(peak, peak+n, comp);
+    
+    ll ans = 0;
+    pair<ll, ll> cur = {-1, -1}; //Will store the left and right intersections with the x-axis of the current highest rightmost peak
+    
+    //go through the peaks in sorted order. If the current peak is hidden behind the current highest peak, then it won't be seen. Else increase our answer by 1 and update the new current highest rightmost peak
+    for (ll i = 0; i < n; i++) {
+        if (i == 0) {
+            ans++;
+            cur.first = peak[i].x;
+            cur.second = peak[i].x + 2*peak[i].height;
+        } else {
+            if (peak[i].x >= cur.first && (peak[i].x + 2*peak[i].height) <= cur.second) {
+                //
+            } else {
+                cur.first = peak[i].x;
+                cur.second = peak[i].x + 2 * peak[i].height;
+                ans++;
+            }
+        }
+    }
+    
+    cout << ans << endl;
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("mountains.in", "r", stdin);
+    freopen("mountains.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+        
+    while (t--) {
+        solve();
+    }
+}
+
