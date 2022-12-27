@@ -1,0 +1,239 @@
+D. Static Range Queries
+USACO Guide Problem Submission
+
+Code:
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+/*
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp> // Common file
+#include <ext/pb_ds/tree_policy.hpp> // Including tree_order_statistics_node_update
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+*/
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e6+5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9+7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll ___lcm(ll a, ll b) {
+    ll prod = a*b;
+    return (prod/__gcd(a, b));
+}
+ 
+ll ceil(ll a, ll b) {
+    if (a == ZER) return a;
+    return (a - ONE)/b + ONE;
+}
+ 
+ll fact[MAXN];
+void precompute()
+{
+    fact[0] = 1;
+    for (ll i = 1; i < MAXN; i++) {
+        fact[i] = (i * fact[i - 1]) % MOD;
+    }
+}
+
+ll powmod(ll a, ll b){
+    a %= MOD;
+    if (a == 0) return 0;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+//calculates the inverse of a number mod MOD
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+ 
+ll nCk(ll n, ll k) {
+    return ((fact[n] * inv(fact[k]) % MOD) * inv(fact[n-k])) % MOD;
+}
+
+ll nPk(ll n, ll k) {
+    return ((fact[n]%MOD * inv(fact[n-k]%MOD)%MOD)%MOD);
+}
+
+//Queries
+struct Event{
+    ll loc, val;
+    bool isStart;
+};
+
+//Sorts queries by x-coordinate
+bool comp(Event e1, Event e2) {
+    return e1.loc < e2.loc;
+}
+
+
+//To solve this problem, we are only going to consider the inclusive start and exclusive end points in the initial n queries. We'll use a set to get all the unique values and sort these values in an array called points. We will compute a corresponding array values such that values[i] is equal to the value at points[i]. Note that for every single integer in [points[i], points[i+1]), its value is equal to values[i]. Then we will compute an intervals array that will store the sum of the values of all such intervals. Finally, we will compute a prefix sum array on this intervals array. Then for each of the queries, we'll decrement r by 1 since its exclusive. Then use binary search to identify the appropriate interval that the endpoints belong to. Then there are 2 cases described closer in the code.
+
+void solve()
+{
+    ll n, q;
+    cin >> n >> q;
+    
+    vector<Event> ve;
+    set<ll> s;
+    
+    for (ll i = 0; i < n; i++) {
+        ll l, r, v;
+        cin >> l >> r >> v;
+        ve.push_back({l, v, true});
+        ve.push_back({r, v, false});
+        s.insert(l); s.insert(r);
+    }
+    
+    //Add a 0 just to make the intervals a little nicer.
+    s.insert(0);
+    
+    //Sort the range events
+    sort(ve.begin(), ve.end(), comp);
+    
+    //Sorted list of all the endpoints in the initial n queries
+    vector<ll> points;
+    for (auto el: s) {
+        points.push_back(el);
+    }
+    sort(points.begin(), points.end());
+    
+    //Compute the values array by sorting the n queries by x and maintaining the current sum.
+    vector<ll> values(points.size(), 0);
+    ll csum = 0;
+    for (ll i = 0; i < ve.size(); i++) {
+        if (ve[i].isStart) {
+            csum += ve[i].val;
+        } else {
+            csum -= ve[i].val;
+        }
+        
+        //For the current location, use binary search to find the appropriate index in the values array to update
+        ll index = lower_bound(points.begin(), points.end(), ve[i].loc) - points.begin();
+        values[index] = csum;
+    }
+    
+    //Intervals[i] is the sum of the values of all the integers in [points[i], points[i+1])
+    ll intervals[points.size()];
+    for (ll i = 0; i < points.size(); i++) {
+        if (i == points.size()-1) {
+            intervals[i] = 0;
+            break;
+        }
+        intervals[i] = values[i] * (points[i+1] - points[i]);
+    }
+    
+    //Prefix sum array on the intervals array
+    ll psum[points.size()+1];
+    psum[0] = 0;
+    for (ll i = 1; i <= points.size(); i++) {
+        psum[i] = psum[i-1] + intervals[i-1];
+    }
+    
+    
+    while (q--) {
+        ll l, r;
+        cin >> l >> r;
+        r--; //Decrement r by 1 since the query is exclusive on the right endpoint
+        
+        //Compute the index that l belongs to and the index that r belongs to
+        ll ind1 = upper_bound(points.begin(), points.end(), l) - points.begin();
+        ll ind2 = upper_bound(points.begin(), points.end(), r) - points.begin();
+        ind1--; ind2--;
+        
+        
+        //2 cases: l and r are in the same interval, or they are in different intervals
+        if (ind1 == ind2) {
+            cout << values[ind1] * (r - l + 1) << endl;
+        } else {
+            //Use prefix sums to compute the shared intervals in O(1) time. Then compute the extra left bit and the extra right bit.
+            ll middle = psum[ind2] - psum[ind1+1];
+            cout << (values[ind1] * (points[ind1+1] - l)) + middle + (values[ind2] * (r - points[ind2] + 1)) << endl;
+        }
+    }
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    //freopen("paintbarn.in", "r", stdin);
+    //freopen("paintbarn.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+        
+    while (t--) {
+        solve();
+    }
+}
+
