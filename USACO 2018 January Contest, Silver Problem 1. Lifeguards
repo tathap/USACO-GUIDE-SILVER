@@ -1,0 +1,197 @@
+USACO 2018 January Contest, Silver
+Problem 1. Lifeguards
+
+Code:
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+/*
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp> // Common file
+#include <ext/pb_ds/tree_policy.hpp> // Including tree_order_statistics_node_update
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+*/
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e6+5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9+7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll ___lcm(ll a, ll b) {
+    ll prod = a*b;
+    return (prod/__gcd(a, b));
+}
+ 
+ll ceil(ll a, ll b) {
+    if (a == ZER) return a;
+    return (a - ONE)/b + ONE;
+}
+ 
+ll fact[MAXN];
+void precompute()
+{
+    fact[0] = 1;
+    for (ll i = 1; i < MAXN; i++) {
+        fact[i] = (i * fact[i - 1]) % MOD;
+    }
+}
+
+ll powmod(ll a, ll b){
+    a %= MOD;
+    if (a == 0) return 0;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+//calculates the inverse of a number mod MOD
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+ 
+ll nCk(ll n, ll k) {
+    return ((fact[n] * inv(fact[k]) % MOD) * inv(fact[n-k])) % MOD;
+}
+
+ll nPk(ll n, ll k) {
+    return ((fact[n]%MOD * inv(fact[n-k]%MOD)%MOD)%MOD);
+}
+
+//Structure to handle and sort the start and endpoints for each lifeguard
+struct Event{
+    ll loc; ll id; bool isStart;
+};
+
+bool comp(Event e1, Event e2) {
+    return e1.loc < e2.loc;
+}
+
+void solve()
+{
+    ll n;
+    cin >> n;
+    
+    Event event[2*n];
+    vector<ll> alone(n, 0); //alone[i] will compute the amount of time spent alone by lifeguard i
+    
+    for (ll i = 0; i < n; i++) {
+        ll a, b;
+        cin >> a >> b;
+        
+        event[2*i].loc = a; event[2*i].isStart = true; event[2*i].id = i;
+        event[2*i + 1].loc = b; event[2*i + 1].isStart = false; event[2*i + 1].id = i;
+    }
+    
+    sort(event, event + 2*n, comp);
+    
+    //This set will maintain the list of active cows
+    set<ll> active;
+    ll totaltime = 0; //totaltime that at least 1 lifeguard is active in
+    for (ll i = 0; i < 2*n; i++) {
+        //Update active cows
+        if (event[i].isStart) {
+            active.insert(event[i].id);
+        } else {
+            active.erase(event[i].id);
+        }
+        
+        //If the current cow is alone, increase alone[ccow] by the amount of time it will be alone
+        if (active.size() == 1) {
+            ll cid = *active.begin();
+            alone[cid] += (event[i+1].loc - event[i].loc);
+        }
+        //If at least 1 cow is active, update the totaltime
+        if (active.size() != 0) {
+            totaltime += (event[i+1].loc - event[i].loc);
+        }
+    }
+    
+    sort(alone.begin(), alone.end());
+    
+    //The ansewr is the totaltime minus the smallest amount of time that a lifeguard is alone for
+    cout << totaltime - alone[0] << endl;
+    
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("lifeguards.in", "r", stdin);
+    freopen("lifeguards.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+        
+    while (t--) {
+        solve();
+    }
+}
+
