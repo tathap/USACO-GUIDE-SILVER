@@ -1,0 +1,202 @@
+USACO 2016 US Open Contest, Gold
+Problem 1. Splitting the Field
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//These 4 comparator functions will sort our vector of points depending on if we want to sort by increasing/decreasing for x/y
+bool compx1(pair<ll, ll> p1, pair<ll, ll> p2) {
+    return p1.first < p2.first;
+}
+
+bool compx2(pair<ll, ll> p1, pair<ll, ll> p2) {
+    return p1.first > p2.first;
+}
+
+bool compy1(pair<ll, ll> p1, pair<ll, ll> p2) {
+    return p1.second < p2.second;
+}
+
+bool compy2(pair<ll, ll> p1, pair<ll, ll> p2) {
+    return p1.second > p2.second;
+}
+
+void solve() {
+    ll n;
+    cin >> n;
+    
+    //s1 and s2 will get all the unique x and y coordinates.
+    set<ll> s1; set<ll> s2;
+    vector<ll> xc; vector<ll> yc; //Will be a sorted list of x and y coordinates
+    
+    //Take the points as input and compute xc and yc
+    vector<pair<ll, ll>> points;
+    for (ll i = 0; i < n; i++) {
+        ll x, y;
+        cin >> x >> y;
+        points.push_back({x, y});
+        s1.insert(x); s2.insert(y);
+    }
+    for (auto el: s1) {
+        xc.push_back(el);
+    }
+    for (auto el: s2) {
+        yc.push_back(el);
+    }
+    sort(xc.begin(), xc.end());
+    sort(yc.begin(), yc.end());
+    
+    //bb1[i] will store the bounding box of all the points in the first i unique x-coordinates
+    //bb2[i] will store the bounding box of all the points in the last i unique x-coordinates
+    //bb3[i] will store the bounding box of all the points in the first i unique y-coordinates
+    //bb4[i] will store the bounding box of all the points in the last i unique y-coordinates
+    vector<pair<pair<ll, ll>, pair<ll, ll>>> bb1(xc.size(), {{INF, -INF}, {INF, -INF}}); //left to right
+    vector<pair<pair<ll, ll>, pair<ll, ll>>> bb2(xc.size(), {{INF, -INF}, {INF, -INF}}); //right to left
+    vector<pair<pair<ll, ll>, pair<ll, ll>>> bb3(yc.size(), {{INF, -INF}, {INF, -INF}}); //up to down
+    vector<pair<pair<ll, ll>, pair<ll, ll>>> bb4(yc.size(), {{INF, -INF}, {INF, -INF}}); //down to up
+    
+    //Compute bb1
+    sort(points.begin(), points.end(), compx1);
+    for (ll i = 0; i < points.size(); i++) {
+        //Given the x-coordinate of the point, identify its index in bb1
+        ll ind = lower_bound(xc.begin(), xc.end(), points[i].first) - xc.begin();
+        if (ind == 0) {
+            bb1[ind].first.first = min(bb1[ind].first.first, points[i].first);
+            bb1[ind].first.second = max(bb1[ind].first.second, points[i].first);
+            bb1[ind].second.first = min(bb1[ind].second.first, points[i].second);
+            bb1[ind].second.second = max(bb1[ind].second.second, points[i].second);
+        } else {
+            bb1[ind].first.first = min(bb1[ind].first.first, min(bb1[ind-1].first.first, points[i].first));
+            bb1[ind].first.second = max(bb1[ind].first.second, max(bb1[ind-1].first.second, points[i].first));
+            bb1[ind].second.first = min(bb1[ind].second.first, min(bb1[ind-1].second.first, points[i].second));
+            bb1[ind].second.second = max(bb1[ind].second.second, max(bb1[ind-1].second.second, points[i].second));
+        }
+    }
+    
+    //Compute bb2
+    sort(points.begin(), points.end(), compx2);
+    for (ll i = 0; i < points.size(); i++) {
+        //Given the x-coordinate of the point, identify its index in bb2
+        ll ind = lower_bound(xc.begin(), xc.end(), points[i].first) - xc.begin();
+        if (ind == xc.size()-1) {
+            bb2[ind].first.first = min(bb2[ind].first.first, points[i].first);
+            bb2[ind].first.second = max(bb2[ind].first.second, points[i].first);
+            bb2[ind].second.first = min(bb2[ind].second.first, points[i].second);
+            bb2[ind].second.second = max(bb2[ind].second.second, points[i].second);
+        } else {
+            bb2[ind].first.first = min(bb2[ind].first.first, min(bb2[ind+1].first.first, points[i].first));
+            bb2[ind].first.second = max(bb2[ind].first.second, max(bb2[ind+1].first.second, points[i].first));
+            bb2[ind].second.first = min(bb2[ind].second.first, min(bb2[ind+1].second.first, points[i].second));
+            bb2[ind].second.second = max(bb2[ind].second.second, max(bb2[ind+1].second.second, points[i].second));
+        }
+    }
+    
+    //Compute bb3
+    sort(points.begin(), points.end(), compy1);
+    for (ll i = 0; i < points.size(); i++) {
+        //Given the y-coordinate of the point, identify its index in bb3
+        ll ind = lower_bound(yc.begin(), yc.end(), points[i].second) - yc.begin();
+        if (ind == 0) {
+            bb3[ind].first.first = min(bb3[ind].first.first, points[i].first);
+            bb3[ind].first.second = max(bb3[ind].first.second, points[i].first);
+            bb3[ind].second.first = min(bb3[ind].second.first, points[i].second);
+            bb3[ind].second.second = max(bb3[ind].second.second, points[i].second);
+        } else {
+            bb3[ind].first.first = min(bb3[ind].first.first, min(bb3[ind-1].first.first, points[i].first));
+            bb3[ind].first.second = max(bb3[ind].first.second, max(bb3[ind-1].first.second, points[i].first));
+            bb3[ind].second.first = min(bb3[ind].second.first, min(bb3[ind-1].second.first, points[i].second));
+            bb3[ind].second.second = max(bb3[ind].second.second, max(bb3[ind-1].second.second, points[i].second));
+        }
+    }
+    
+    //Compute bb4
+    sort(points.begin(), points.end(), compy2);
+    for (ll i = 0; i < points.size(); i++) {
+        //Given the y-coordinate of the point, identify its index in bb4
+        ll ind = lower_bound(yc.begin(), yc.end(), points[i].second) - yc.begin();
+        if (ind == yc.size()-1) {
+            bb4[ind].first.first = min(bb4[ind].first.first, points[i].first);
+            bb4[ind].first.second = max(bb4[ind].first.second, points[i].first);
+            bb4[ind].second.first = min(bb4[ind].second.first, points[i].second);
+            bb4[ind].second.second = max(bb4[ind].second.second, points[i].second);
+        } else {
+            bb4[ind].first.first = min(bb4[ind].first.first, min(bb4[ind+1].first.first, points[i].first));
+            bb4[ind].first.second = max(bb4[ind].first.second, max(bb4[ind+1].first.second, points[i].first));
+            bb4[ind].second.first = min(bb4[ind].second.first, min(bb4[ind+1].second.first, points[i].second));
+            bb4[ind].second.second = max(bb4[ind].second.second, max(bb4[ind+1].second.second, points[i].second));
+        }
+    }
+    
+    //Compute the area of 1 bounding box that would encompass all the points
+    ll total = (bb1[xc.size()-1].first.second - bb1[xc.size()-1].first.first) * (bb1[xc.size()-1].second.second - bb1[xc.size()-1].second.first);
+    ll ans = 0;
+    
+    //At each of the i x-coordinates, compute the largest amount of space you would save by using a bounding box for the first i coordinates and using another bounding box for the remaining coordinates.
+    sort(xc.begin(), xc.end());
+    for (ll i = 0; i < xc.size() - 1; i++) {
+        ll area1 = (bb1[i].first.second - bb1[i].first.first) * (bb1[i].second.second - bb1[i].second.first);
+        ll area2 = (bb2[i+1].first.second - bb2[i+1].first.first) * (bb2[i+1].second.second - bb2[i+1].second.first);
+        ans = max(ans, total - area1 - area2);
+    }
+    
+    //At each of the i y0coordinates, compute the largest amount of space you would save by using a bounding box for the first i coordinates and using another bounding box for the remaining coordinates.
+    sort(yc.begin(), yc.end());
+    for (ll i = 0; i < yc.size() - 1; i++) {
+        ll area1 = (bb3[i].first.second - bb3[i].first.first) * (bb3[i].second.second - bb3[i].second.first);
+        ll area2 = (bb4[i+1].first.second - bb4[i+1].first.first) * (bb4[i+1].second.second - bb4[i+1].second.first);
+        ans = max(ans, total - area1 - area2);
+    }
+
+    cout << ans << endl;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    freopen("split.in", "r", stdin);
+    freopen("split.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
