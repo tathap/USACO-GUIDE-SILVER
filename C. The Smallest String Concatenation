@@ -1,0 +1,78 @@
+C. The Smallest String Concatenation 
+Educational Codeforces Round 9
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//We'll sort the strings based on whichever one is lexographically smaller. This will work bc sorting it is transitive
+
+bool comp(string s1, string s2) {
+    return s1 + s2 < s2 + s1;
+}
+void solve() {
+    ll n;
+    cin >> n;
+    
+    string a[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> a[i];
+    }
+    sort(a, a+n, comp);
+        
+    for (ll i = 0; i < n; i++) {
+        cout << a[i];
+    }
+    cout << endl;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("split.in", "r", stdin);
+    freopen("split.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
