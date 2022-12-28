@@ -1,0 +1,115 @@
+C. Nezzar and Symmetric Array
+Codeforces Round #698 (Div. 2)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Lets assume that we started off with array a. Let's sort it. We'll get this: -a_n, -a_n-1, -a_n-2, . . . , -a_1, a_1, a_2, . . ., a_n where a_1, a_2, and so on are positive. Note that we're assuming WLOG that a_1 < a_2 < a_3 < a_4 < . . . < a_n since all the a-values are distinct. The first observation is to realize that for a_i and -a_i, their d values will be the same. You can do some math to prove this. So lets calculate the d values for a_1 through a_n, since it would be redundant to do that for -a_1 through -a_n. Now we see that d_i = 2*i*a_i + 2*a_i+1 + 2*a_i+2 + . . . + 2*a_n. This pattern is fairly easy to see by doing some math (Try calculating the d values for this sequence -a_4, -a_3, -a_2, -a_1, a_1, a_2, a_3, and a_4 to better see the pattern). We also see that d is strictly increasing, which is easy to see from our WLOG assumption from the beginning. This means that in our input array d, each number MUST appear exactly TWICE in order for there to be a solution. So what we can do is compute a_n, a_n-1, . . . a_1 in that order in O(n) time, checking if a solution is possible every step of the way. We must take special care to check that our a-values are positive (If it was 0, it would violate the condition that a is distinct, since there would need to be a -1 * 0 = 0 element in the array. If it was negative, then it would violate our initial assumption).
+void solve() {
+    ll n;
+    cin >> n;
+    
+    ll d[2*n];
+    for (ll i = 0; i < 2*n; i++) {
+        cin >> d[i];
+    }
+    sort(d, d + 2*n);
+    
+    //Check to make sure there are exactly n unique pairs of equal values.
+    map<ll, ll> me;
+    for (ll i = 0; i < 2*n; i++) {
+        me[d[i]]++;
+    }
+    
+    for (auto el: me) {
+        if (el.second != 2) {
+            cout << "NO" << endl;
+            return;
+        }
+    }
+    
+    //Sort the d values
+    vector<ll> d2;
+    for (auto el: me) {
+        d2.push_back(el.first);
+    }
+    
+    sort(d2.begin(), d2.end());
+    
+    ll a[n]; //Stores the values of a_1, a_2, . . ., a_n
+    
+    ll cfactor = 2*n; //Will store the current coefficient of the leading term in the equation. For example in the case where n = 4, d_4 = 8*a_4. The cfactor there would be 8. After every iteration, the cfactor decreases by 2.
+    ll csum = 0; //Maintains the sum of the currently processed suffix of a multiplied by 2
+    for (ll i = n-1; i >= 0; i--) {
+        //Compute a_i using the pattern we found
+        a[i] = (d2[i] - csum)/cfactor;
+        
+        //If the previous division results in a fractional answer for a, then we don't have a solution.
+        if (cfactor * a[i] != (d2[i] - csum)) {
+            cout << "NO" << endl;
+            return;
+        }
+        //If we get a non-positive value for a, we don't have a solution
+        if (a[i] <= 0) {
+            cout << "NO" << endl;
+            return;
+        }
+        //Decrement cfactor by 2 and update csum
+        cfactor -= 2;
+        csum += 2*a[i];
+    }
+    
+    cout << "YES" << endl;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("split.in", "r", stdin);
+    freopen("split.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
