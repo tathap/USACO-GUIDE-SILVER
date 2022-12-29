@@ -1,0 +1,98 @@
+Concert Tickets
+CSES Sorting and Searching
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+void solve() {
+    ll n, m;
+    cin >> n >> m;
+    
+    map<ll, ll> me;
+    for (ll i = 0; i < n; i++) {
+        ll h; cin >> h;
+        me[h]++;
+    }
+    
+    for (ll i = 0; i < m; i++) {
+        ll k; cin >> k;
+        
+        if (me.size() == 0) {
+            cout << -1 << endl;
+            continue;
+        }
+        
+        auto it = me.upper_bound(k);
+        if (it == me.begin()) {
+            cout << -1 << endl;
+            continue;
+        }
+        it--;
+        
+        pair<ll, ll> el = *it;
+        if (el.first <= k) {
+            cout << el.first << endl;
+            me[el.first]--;
+            if (me[el.first] == 0) {
+                me.erase(el.first);
+            }
+        } else {
+            cout << -1 << endl;
+        }
+    }
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("herding.in", "r", stdin);
+    freopen("herding.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
