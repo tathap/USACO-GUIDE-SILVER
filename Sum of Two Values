@@ -1,0 +1,91 @@
+Sum of Two Values
+CSES Problem Set
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+void solve() {
+    ll n, x;
+    cin >> n >> x;
+    
+    ll a[n]; map<ll, set<ll>> me;
+    for (ll i = 0; i < n; i++) {
+        cin >> a[i];
+        me[a[i]].insert(i);
+    }
+    
+    if (n == 1) {
+        cout << "IMPOSSIBLE" << endl;
+        return;
+    }
+    
+    for (ll i = 0; i < n; i++) {
+        me[a[i]].erase(i);
+        if (me[a[i]].size() == 0) {
+            me.erase(a[i]);
+        }
+        
+        ll goal = x - a[i];
+        if (me.find(goal) == me.end()) {
+            //
+        } else {
+            ll i2 = *me[goal].begin();
+            cout << i+1 << " " << i2+1 << endl;
+            return;
+        }
+    }
+    
+    cout << "IMPOSSIBLE" << endl;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("split.in", "r", stdin);
+    freopen("split.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
