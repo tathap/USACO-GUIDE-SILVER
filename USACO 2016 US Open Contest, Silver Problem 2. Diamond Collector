@@ -1,0 +1,101 @@
+USACO 2016 US Open Contest, Silver
+Problem 2. Diamond Collector
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Observation: If we sort the diamonds, then the 2 cases will be different subarrays of the diamonds. So we can compute the largest subarray for every prefix and suffix of the sorted list of diamonds, and use that precomputation to compute our answer
+void solve() {
+    ll n, k;
+    cin >> n >> k;
+    
+    ll a[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> a[i];
+    }
+    
+    //Sort the diamonds
+    sort(a, a+n);
+    
+    ll ps1[n], ps2[n]; //ps1[i] stores the largest case for the first i diamonds, ps2[i] stores the largest case for the last i diamonds
+    for (ll i = 0; i < n; i++) {
+        if (i == 0) {
+            ps1[i] = 1;
+        } else {
+            ll ind = lower_bound(a, a+n, a[i] - k) - a;
+            ps1[i] = max(ps1[i-1], i-ind+1);
+        }
+    }
+    
+    for (ll i = n-1; i >= 0; i--) {
+        if (i == n-1) {
+            ps2[i] = 1;
+        } else {
+            ll ind = upper_bound(a, a+n, a[i] + k) - a;
+            --ind;
+            ps2[i] = max(ps2[i+1], ind-i+1);
+        }
+    }
+    
+    
+    //Compute the best answer
+    ll ans = 0;
+    for (ll i = 0; i < n-1; i++) {
+        ans = max(ans, ps1[i] + ps2[i+1]);
+    }
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("diamond.in", "r", stdin);
+    freopen("diamond.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
