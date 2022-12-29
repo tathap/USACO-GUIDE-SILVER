@@ -1,0 +1,97 @@
+C. They Are Everywhere
+Codeforces Round #364 (Div. 2)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+void solve() {
+    ll n;
+    cin >> n;
+    
+    string s;
+    cin >> s;
+    
+    //Compute the #of unique pokemon
+    set<char> s1;
+    map<ll, ll> m;
+    for (ll i = 0; i < n; i++) {
+        s1.insert(s[i]);
+    }
+    
+    ll ans = n;
+    
+    //Use 2-pointers to compute the length of the shortest subarray that works
+    ll l = 0, r = 0;
+    m[s[0]] = 1; //Will store the frequency of all pokemon types seen
+    while (l < n && r < n) {
+        if (m.size() < s1.size()) {
+            r++;
+            if (r < n) {
+                m[s[r]]++;
+            }
+        } else {
+            ans = min(ans, r - l + 1);
+            m[s[l]]--;
+            if (m[s[l]] == 0) {
+                m.erase(s[l]);
+            }
+            l++;
+        }
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("pairup.in", "r", stdin);
+    freopen("pairup.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
