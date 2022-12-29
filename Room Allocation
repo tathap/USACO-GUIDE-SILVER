@@ -1,0 +1,120 @@
+Room Allocation
+CSES Sorting and Searching
+
+Code;
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Each event is the start or end day of a customer
+struct Event{
+    ll day; bool isStart;
+    ll index;
+};
+
+//Sort the events by day. If 2 days are equal, then the one that is starting must go first. This is b/c of the condition in the problem that "Two customers can stay in the same room if the departure day of the first customer is earlier than the arrival day of the second customer". If we put an ending event first, then we will get a free room that shouldn't have been freed for a starting event at the same time
+
+bool comp(Event e1, Event e2) {
+    if (e1.day == e2.day) {
+        return e1.isStart > e2.isStart;
+    }
+    return e1.day < e2.day;
+}
+
+void solve() {
+    ll n;
+    cin >> n;
+    
+    //ans[i] stores the room# of customer i
+    ll ans[n];
+    vector<Event> event;
+    
+    for (ll i = 0; i < n; i++) {
+        ll a, b;
+        cin >> a >> b;
+        
+        event.push_back({a, true, i});
+        event.push_back({b, false, i});
+    }
+    
+    sort(event.begin(), event.end(), comp);
+    
+    //c will store the number of the room to provide if we are out of rooms, while available will store a set of all rooms currently available
+    ll c = 1; set<ll> available;
+    
+    for (ll i = 0; i < 2*n; i++) {
+        if (event[i].isStart) {
+            //We need to create a new room.
+            if (available.size() == 0) {
+                ans[event[i].index] = c;
+                c++;
+            } else { //We can use one of the available rooms
+                ans[event[i].index] = *available.begin();
+                available.erase(ans[event[i].index]);
+            }
+        } else {
+            //Add the used room back to available
+            available.insert(ans[event[i].index]);
+        }
+    }
+    
+    //Print the largest room used. This will be the same as the #of distinct rooms used.
+    cout << c-1 << endl;
+    for (ll i = 0; i < n; i++) {
+        cout << ans[i] << " ";
+    }
+    cout << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("herding.in", "r", stdin);
+    freopen("herding.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
