@@ -1,0 +1,111 @@
+CSES Problem Set
+Traffic Lights
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Algorithm: We'll go in reverse order. We'll create a set that will initally contain all the traffic lights plus the positions 0 and x. The reason why 0 and x will also be added to the set is that they don't matter for the answer, but they will make it easier to prevent iterators from going out of bounds. We will store an array ans such that ans[i] stores the largest passage without traffic lights after using the first i traffic lights. We'll go in reverse order b/c the gaps will always get bigger and bigger, so we can use previous answers without worrying about whether they are impossible after going backwards.
+void solve() {
+    ll x, n;
+    cin >> x >> n;
+    
+    ll p[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> p[i];
+    }
+    
+    set<ll> s;
+    for (ll i = 0; i < n; i++) {
+        s.insert(p[i]);
+    }
+    s.insert(0); s.insert(x);
+    
+    ll ans[n];
+    for (ll i = 0; i < n; i++) {
+        ans[i] = 0;
+    }
+    
+    //Compute ans[n-1] by taking the maximum of all existing distances.
+    for (auto it = s.begin(); it != s.end(); ++it) {
+        if (it == s.begin()) {
+            continue;
+        }
+        
+        auto it2 = it; it2--;
+        ans[n-1] = max(ans[n-1], *it - *it2);
+    }
+    
+    //Now go in reverse order
+    for (ll i = n-1; i > 0; i--) {
+        //If a traffic light is at 0, or x, then they don't matter, so use the same answer as before.
+        if (p[i] == 0 || p[i] == x) {
+            ans[i-1] = ans[i];
+            continue;
+        }
+        
+        //Otherwise, use next and prev to find the iterators before and after the deleted traffic element, and update ans[i-1] based on this new distance.
+        auto it = s.find(p[i]);
+        ans[i-1] = max(max(ans[i], ans[i-1]), *next(it) - *prev(it));
+        s.erase(p[i]);
+    }
+    
+    for (ll i = 0; i < n; i++) {
+        cout << ans[i] << " ";
+    }
+    cout << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("herding.in", "r", stdin);
+    freopen("herding.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
