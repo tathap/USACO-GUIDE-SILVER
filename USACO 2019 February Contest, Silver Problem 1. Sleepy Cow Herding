@@ -1,0 +1,121 @@
+USACO 2019 February Contest, Silver
+Problem 1. Sleepy Cow Herding
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//First, sort the cows
+//Observation: In order to find the minimum # of moves, we can use a "sliding window" of size n. Lets say that the ith sliding window has x_i cows on it. Then our minimum # of moves is n - x_i. There is an edge case where all the cows are consecutive except one. In this case, the minimum # of moves is 1 if the gap between the lonely cow and the others is 1, and 2 if the gap is more than that. In order to find the maximum # of moves, we see that if we look at the consecutive gaps between cows, the maximum # of moves is just the toal # of gaps between all the cows subtracted by the minimum of the gap between the first 2 cows and the last 2 cows. This is easy to see by doing some examples
+void solve() {
+    ll n;
+    cin >> n;
+    
+    ll location[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> location[i];
+    }
+    sort(location, location+n);
+    
+    //Compute the total # of gaps
+    ll totald = 0;
+    for (ll i = 1; i < n; i++) {
+        totald += (location[i] - location[i-1] - 1);
+    }
+    //Compute the gaps between the first 2 and last 2 cows
+    ll d1 = location[1] - location[0] - 1; ll d2 = location[n-1] - location[n-2] - 1;
+    
+    //ans.first is the minimum # of moves, while ans.second is the maximum # of moves
+    pair<ll, ll> ans = {INF, -1};
+    ans.second = totald - min(d1, d2);
+    
+    //Note that it's always most efficent to have the left endpoint of our sliding window at a cow
+    for (ll i = 0; i < n; i++) {
+        ll ind = upper_bound(location, location+n, location[i]+n-1) - location;
+        --ind;
+        
+        ans.first = min(ans.first, n - (ind - i + 1));
+    }
+    
+    //Check to see if the middle n-2 cows are consecutive for our special edge case
+    bool works = true;
+    for (ll i = 2; i < n-1; i++) {
+        if (location[i] - location[i-1] != 1) {
+            works = false;
+            break;
+        }
+    }
+    
+    //Check the special edge case
+    if (works) {
+        if (d1 == 0 && d2 != 0) {
+            if (d2 == 1) {
+                ans.first = 1;
+            } else {
+                ans.first = 2;
+            }
+        } else if (d1 != 0 && d2 == 0) {
+            if (d1 == 1) {
+                ans.first = 1;
+            } else {
+                ans.first = 2;
+            }
+        }
+    }
+    
+    cout << ans.first << endl;
+    cout << ans.second << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("herding.in", "r", stdin);
+    freopen("herding.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
