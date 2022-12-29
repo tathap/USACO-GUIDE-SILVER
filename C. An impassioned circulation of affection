@@ -1,0 +1,119 @@
+C. An impassioned circulation of affection
+Codeforces Round #418 (Div. 2)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+void solve() {
+    ll n;
+    cin >> n;
+    
+    string s;
+    cin >> s;
+    
+    //ps[i][j] will store the #of occurences of the character i in the first j characters
+    ll ps[26][n+1];
+    for (ll i = 0; i < 26; i++) {
+        ps[i][0] = 0;
+    }
+    
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < 26; j++) {
+            ps[j][i+1] = ps[j][i];
+        }
+        ll ind = s[i] - 'a';
+        ps[ind][i+1]++;
+    }
+    
+    //ans[i][j] stores the best answer using character i with exactly j changes
+    ll ans[26][n+1];
+    for (ll i = 0; i < 26; i++) {
+        for (ll j = 0; j <= n; j++) {
+            ans[i][j] = -1;
+        }
+    }
+    
+    
+    //Iterate through every subarray and color, and directly update ans
+    for (ll i = 0; i < n; i++) {
+        for (ll j = i; j < n; j++) {
+            for (ll k = 0; k < 26; k++) {
+                ll count = ps[k][j+1] - ps[k][i];
+                ll dif = j - i + 1 - count;
+                ans[k][dif] = max(ans[k][dif], j - i + 1);
+            }
+        }
+    }
+    
+    ll q;
+    cin >> q;
+    
+    //For each query, there are 2 cases. Case 1: m plus the #of characters c already in the string is greater than n. In this case, the answer is n. Otherwise, it's directly optimal to use exactly m changes, so use the answer matrix we computed earlier
+    while (q--) {
+        ll m; char c;
+        cin >> m >> c;
+        
+        ll ind = c - 'a';
+        if (m + ps[ind][n] > n) {
+            cout << n << endl;
+            continue;
+        }
+        
+        cout << ans[ind][m] << endl;
+    }
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("herding.in", "r", stdin);
+    freopen("herding.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
