@@ -1,0 +1,261 @@
+USACO 2018 February Contest, Gold
+Problem 1. Snow Boots
+
+Code:
+USACO GOLD 2018 FEBRUARY
+
+SOLVED WITHOUT EDI? : NO
+
+OBSERVATIONS YOU CAME UP WITH: I THOUGHT I COULD MAINTAIN A SET OF BOOTS THAT COULD POSSIBLY REACH THE LAST TILE AND DO RANGE OPERATIONS OR SOMETHING LIKE THAT BUT I COULDN’T FIND A GOOD SOLUTION
+
+OBSERVATIONS YOU NEEDED: BASICALLY IF A BOOT WITH A CERTAIN DEPTH CAN GO TO A SET OF TILES, THEN ANY BOOT WITH A LOWER DEPTH CAN ONLY GO TO A SUBSET OF THOSE TILES. SO THE SOLUTION IS TO SORT THE BOOTS FIRST BY DEPTH AND THEN BY THE LENGTH OF THE STEP. AT BOOT I, REMOVE ALL THE TILES WITH DEPTH GREATER THAN I AND MAINTAIN A SET THAT WILL ALLOW YOU TO COMPUTE THE MAXIMUM DISTANCE BETWEEN CONSECUTIVE TILES THAT HAVEN’T BEEN REMOVED. IF THIS MAXIMUM DISTANCE IS GREATER THAN THE LENGTH OF THE STEP OF BOOT I, THAN IT CAN’T BE USED. OTHERWISE IT CAN. IN ORDER TO DO THIS, WE NEED TO SORT THE TILES AT THE BEGINNING BY DEPTH, SO THE TIME COMPLEXITY SHOULD BE AROUND O(NLOGN).
+
+WHY I DIDN’T GET THIS OBSERVATION: I DON’T THINK I WAS ABLE TO REALIZE THAT BY SORTING THE BOOTS AND THE TILES, YOU CAN MINIMIZE A LOT OF REPEATED WORK.
+
+CODE:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 1e3 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+/*
+ Person pooping
+ -4°
+*/
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll lcm(ll a, ll b) {
+    ll prod = a*b;
+    return (prod/__gcd(a, b));
+}
+ 
+ll ceil(ll a, ll b) {
+    if (a == ZER) return a;
+    return (a - ONE)/b + ONE;
+}
+
+ll floor(ll a, ll b) {
+    return a/b;
+}
+ 
+ll fact[MAXN];
+void precompute()
+{
+    fact[0] = 1;
+    for (ll i = 1; i < MAXN; i++) {
+        fact[i] = (i * fact[i - 1]) % MOD;
+    }
+}
+ 
+ll powmod(ll a, ll b) {
+    a %= MOD;
+    if (a == ZER) return a;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+    
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+ 
+ll nCk(ll n, ll k) {
+    return ((fact[n] * inv(fact[k]) % MOD) * inv(fact[n-k])) % MOD;
+}
+
+bool comp() {
+    return true;
+}
+
+bool works(ll k) {
+    return true;
+}
+
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+
+struct Tile{
+    ll depth, pos;
+};
+
+//sorts tiles by depth
+bool com1(Tile t1, Tile t2) {
+    return t1.depth > t2.depth;
+}
+
+struct Boot{
+    ll depth, step, pos;
+};
+
+//sorts boots by depth
+bool com2(Boot b1, Boot b2) {
+    return b1.depth > b2.depth;
+}
+
+void solve() {
+    ll n, b;
+    cin >> n >> b;
+    
+    Tile tile[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> tile[i].depth;
+        tile[i].pos = i;
+    }
+    
+    //set of all tiles currently active
+    set<ll> se;
+    for (ll i = 0; i < n; i++) {
+        se.insert(i);
+    }
+    
+    Boot boot[b];
+    for (ll i = 0; i < b; i++) {
+        cin >> boot[i].depth >> boot[i].step;
+        boot[i].pos = i;
+    }
+    
+    //sort tiles and boots in decreasing order of depth
+    sort(tile, tile + n, com1);
+    sort(boot, boot + b, com2);
+    
+    vector<bool> answer(b);
+    
+    ll cur = 0; //stores the index of the current tile we are on, all previous tiles have been deleted
+    ll dist = 1; //stores the maximum distance between consecutive available tiles
+    
+    for (ll i = 0; i < b; i++) {
+        bool works = true;
+        //go through all the tiles that you can delete
+        while (cur < n && tile[cur].depth > boot[i].depth) {
+            //compute the maximum distance by removing the tile and computing the difference between the previous and next element
+            auto it = se.find(tile[cur].pos);
+            dist = max(dist, ((*next(it)) - (*prev(it))));
+            if (dist > boot[i].step) {
+                works = false;
+            }
+            se.erase(it);
+            cur++;
+        }
+        
+        if (dist > boot[i].step) {
+            works = false;
+        }
+        
+        answer[boot[i].pos] = works;
+    }
+    
+    for (ll i = 0; i < b; i++) {
+        cout << answer[i] << endl;
+    }
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
+
