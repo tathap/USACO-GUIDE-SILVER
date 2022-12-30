@@ -1,0 +1,118 @@
+USACO 2018 December Contest, Silver
+Problem 2. Convention II
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+void solve() {
+    ll n;
+    cin >> n;
+    
+    //Sort the cows first by smaller arrival times, and then by smaller index to account for seniority
+    pair<pair<ll, ll>, ll> cow[n];
+    for (ll i = 0; i < n; i++) {
+        ll a, t;
+        cin >> a >> t;
+        cow[i] = {{a, i}, t};
+    }
+    
+    sort(cow, cow+n);
+    
+    //ans[i] stores the amount of time cow i waits
+    vector<ll> ans(n, 0);
+    //ctime will store the current time, and index will store the next available cow
+    ll ctime = cow[0].first.first; ll index = 1;
+    //pq will store all the waiting cows in order by their seniority
+    priority_queue<pair<pair<ll, ll>, ll>> pq;
+    pq.push({{-1*cow[0].first.second, cow[0].first.first}, cow[0].second});
+    
+    //Keep running this loop until all cows are used
+    while (true) {
+        //Use the top element in the priority queue, compute the amount of time it waits, compute its ending time, and then iterate from index and add as many cows that arrived before the ending time into the priority queue
+        while (!pq.empty()) {
+            pair<pair<ll, ll>, ll> p = pq.top();
+            pq.pop();
+            
+            ans[-1*p.first.first] = ctime - p.first.second;
+            ctime += p.second;
+            
+            while (index < n && cow[index].first.first <= ctime) {
+                pq.push({{-1*cow[index].first.second, cow[index].first.first}, cow[index].second});
+                index++;
+            }
+        }
+        
+        //If no more cows arrived before the current time, but there are still more cows in the future, add the first available cow to the priority queue and update ctime
+        if (index < n) {
+            pq.push({{-1*cow[index].first.second, cow[index].first.first}, cow[index].second});
+            ctime = cow[index].first.first;
+            index++;
+        } else {
+            break;
+        }
+    }
+    
+    //Find the maximum time a cow will wait
+    ll maxi = 0;
+    for (ll i = 0; i < n; i++) {
+        maxi = max(maxi, ans[i]);
+    }
+    
+    cout << maxi << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
