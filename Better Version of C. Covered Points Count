@@ -1,0 +1,118 @@
+C. Covered Points Count
+Educational Codeforces Round 46 (Rated for Div. 2)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+struct Event{
+    ll pos; bool isStart;
+};
+
+//suspicion
+bool comp(Event e1, Event e2) {
+    if (e1.pos == e2.pos) {
+        return e1.isStart < e2.isStart;
+    }
+    return e1.pos < e2.pos;
+}
+
+void solve() {
+    ll n;
+    cin >> n;
+    
+    Event event[2*n];
+    for (ll i = 0; i < n; i++) {
+        ll l, r;
+        cin >> l >> r;
+        event[2*i] = {l, true};
+        event[2*i + 1] = {r+1, false};
+    }
+    
+    sort(event, event + 2*n, comp);
+    
+    vector<ll> ans(n+1, 0);
+    map<ll, ll> ma; //key is the location, value is the # of goals active
+    ll csum = 0;
+    for (ll i = 0; i < 2*n; i++) {
+        if (event[i].isStart) {
+            csum++;
+        } else {
+            csum--;
+        }
+        ma[event[i].pos] = csum;
+    }
+    
+    /*for (auto el: ma) {
+        cout << el.first << " " << el.second << endl;
+    }*/
+    
+    for (auto it = ma.begin(); it != ma.end(); it++) {
+        if (it == ma.begin()) {
+            continue;
+        }
+        pair<ll, ll> el1 = *it;
+        pair<ll, ll> el2 = *prev(it);
+        
+        ans[el2.second] += (el1.first - el2.first);
+    }
+    
+    for (ll i = 1; i <= n; i++) {
+        cout << ans[i] << " ";
+    }
+    cout << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
