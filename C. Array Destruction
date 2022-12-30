@@ -1,0 +1,131 @@
+C. Array Destruction
+Codeforces Round #696 (Div. 2)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Observation: At the current state of the array with the current x-value, the largest element must be part of the pair that sums up to the current x-value. This is b/c if it wasn't, then the resulting x-value would be smaller than it and it would never get to be erased again.
+//Observation: There are only at most 2*n possible starting x-values. Since the largest element has to be part of it, that leaves 2n choices for the other element in the pair.
+//Observation: If we iterate over the 2n starting x-values, and for each x-value, check if it works using the first observation, then we have a solution
+void solve() {
+    ll n;
+    cin >> n;
+    
+    ll a[2*n];
+    for (ll i = 0; i < 2*n; i++) {
+        cin >> a[i];
+    }
+    
+    //sort the values
+    sort(a, a + 2*n);
+    
+    set<ll> allx; //stores all possible x-values
+    for (ll i = 0; i < 2*n - 1; i++) {
+        allx.insert(a[2*n - 1] + a[i]);
+    }
+    
+    for (auto el: allx) {
+        //ma[i] will store the #of times element i appears
+        map<ll, ll> ma;
+        for (ll i = 0; i < 2*n; i++) {
+            ma[a[i]]++;
+        }
+        
+        //If our x-value works, answer will give us the list of pairs for the job
+        vector<pair<ll, ll>> ans;
+        //maintains the x-value through the simulation
+        ll x = el;
+        //If el doesn't work as an x-value, we have no solution
+        bool works = true;
+        while (ma.size() > 0) {
+            //The largest available element has to be part of the pair
+            pair<ll, ll> e1 = *ma.rbegin();
+            ma[e1.first]--;
+            if (ma[e1.first] == 0) {
+                ma.erase(e1.first);
+            }
+            
+            //If no one can partner with the largest element to sum to x, then there's no solution
+            if (ma.find(x-e1.first) == ma.end()) {
+                works = false;
+                break;
+            } else { //If there is a suitable element, use it and update x and the answer vector
+                ma[x-e1.first]--;
+                if (ma[x-e1.first] == 0) {
+                    ma.erase(x-e1.first);
+                }
+                ans.push_back({e1.first, x-e1.first});
+                x = e1.first;
+            }
+        }
+        
+        //If we found a solution print it
+        if (works) {
+            cout << "YES" << endl;
+            cout << el << endl;
+            for (ll i = 0; i < ans.size(); i++) {
+                cout << ans[i].first << " " << ans[i].second << endl;
+            }
+            return;
+        }
+    }
+    
+    //No solution
+    cout << "NO" << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
