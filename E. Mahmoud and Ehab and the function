@@ -1,0 +1,149 @@
+E. Mahmoud and Ehab and the function
+Codeforces Round #435 (Div. 2)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Observation: If we expand the formula for f(j), we get |a_1 - b_1+j - a_2 + b_2+j + a_3 - b_3+j . . . |. This can be rearranged to | (a_1 - a_2 + a_3 . . .) - (b_1+j - b_2+j + b_3+j . . .)| The alternating sum of array a can be handled relatively easily. Calculate it once in O(n) at the beginning. Then for each of the queries, it can be updated in O(1) by counting the number of indices in each query that are added in the sum and the number of indices in each query that are subtracted in the sum. There are only a limited number of options for what the second sum can be. Since all the terms in the second part must be consecutive, there are only m-n possible sums for the second part, since none of the queries will change the array b. So compute all the values and store them in a set. Then for each query, update the alternating sum for a in O(1). In order to minimize the absolute value, we want to find a value in the set that's closest to the alternating sum of a. This can be done very easily with the closest() function
+
+//Stores all the alternating sums of the array b with length n
+set<ll> s;
+
+//Given a value, compute the closest element to it in the set of alternating sums for array b and then find the absolute difference
+ll closest(ll v) {
+    auto it = s.lower_bound(v);
+    if (it == s.begin()) {
+        return abs((*it) - v);
+    } else if (it == s.end()) {
+        return abs((*prev(it)) - v);
+    } else {
+        return min(abs((*it) - v), abs((*prev(it)) - v));
+    }
+}
+
+void solve() {
+    ll n, m, q;
+    cin >> n >> m >> q;
+    
+    ll a[n];
+    ll sum1 = 0; //Compute the alternating sum for a
+    for (ll i = 0; i < n; i++) {
+        cin >> a[i];
+        if (i%2 == 0) {
+            sum1 += a[i];
+        } else {
+            sum1 -= a[i];
+        }
+    }
+    
+    ll b[m];
+    for (ll i = 0; i < m; i++) {
+        cin >> b[i];
+    }
+        
+    //Compute all the length n alternating sums where the first element is added and insert all of them into the set
+    ll sum2 = 0;
+    ll i;
+    for (i = 0; i < n; i++) {
+        if (i%2 == 0) {
+            sum2 += b[i];
+        } else {
+            sum2 -= b[i];
+        }
+    }
+    s.insert(sum2);
+    
+    while (i < m) {
+        ll st = i - n;
+        sum2 -= b[st];
+        sum2 *= -1;
+        if (n%2 == 0) {
+            sum2 -= b[i];
+        } else {
+            sum2 += b[i];
+        }
+        s.insert(sum2);
+        i++;
+    }
+    
+    //print the minimum value of f without any new queries
+    cout << closest(sum1) << endl;
+        
+    while (q--) {
+        ll l, r, x;
+        cin >> l >> r >> x;
+        l--; r--;
+        
+        //Count the number of even and odd indexed elements in the query and use that to update sum1 (the alternating sum for a) in O(1) time using math
+        ll ecount; ll ocount;
+        if (l%2 == 1 && r%2 == 0) {
+            ecount = (r-l)/2 + 1;
+        } else if (l%2 == 1 && r%2 == 0) {
+            ecount = (r-l)/2 + 1;
+        } else if (l%2 == 1 && r%2 == 1) {
+            ecount = (r-l)/2;
+        } else {
+            ecount = (r-l)/2 + 1;
+        }
+        ocount = (r-l+1) - ecount;
+        sum1 += (x*ecount - x*ocount);
+        
+        //Find the closest element to sum1 and then compute the absolute difference
+        cout << closest(sum1) << endl;
+    }
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
