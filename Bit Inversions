@@ -1,0 +1,181 @@
+Bit Inversions
+CSES Additional Problems
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Maintain a multiset that will store a list of all possible sizes of consecutive groups currently, and a set that will store starting points of all intervals of equal bits. Maintain both these data structures to compute the answer
+void solve() {
+    string s;
+    cin >> s;
+    
+    ll n = s.length();
+    ll m; cin >> m;
+    
+    //Stores the starting points for each consecutive group of 1's or 0's
+    set<ll> se;
+    
+    char c = '*';
+    for (ll i = 0; i < n; i++) {
+        if (s[i] != c) {
+            se.insert(i+1);
+            c = s[i];
+        }
+    }
+    
+    //First handle the simulation, then handle the multiset of answers
+    multiset<ll> ans;
+    for (auto it = se.begin(); it != se.end(); it++) {
+        auto it2 = next(it);
+        if (it2 == se.end()) {
+            ans.insert(n - (*it) + 1);
+        } else {
+            ans.insert((*it2) - (*it));
+        }
+    }
+    
+    for (ll i = 0; i < m; i++) {
+        ll x; cin >> x;
+        
+        //compute the iterator of the interval that x will be in, and its left and right bounds inclusive
+        ll l, r;
+        auto it = se.upper_bound(x);
+        if (it == se.end()) {
+            r = n;
+        } else {
+            r = *it; r--;
+        }
+        
+        it--;
+        l = *it;
+        
+        auto it2 = se.begin(); //I just led it2 = se.begin() in order to initialize it2 as an iterator
+        
+        //startl will store the left bound of the range to the left of our current range, while startr will store the left bound of the range to the right of our current rage. lenl will store the length of the range to the left of our current range while lenr will store the length of the range to the right of our current range. If a left or right range doesn't exist, the values of startl and startr will be junk values and the values of lenl and lenr will be 0
+        ll startl, startr, lenl, lenr;
+        if (it == se.begin()) {
+            startl = -1; lenl = 0;
+        } else {
+            it2 = it; it2--;
+            startl = *it2;
+            lenl = l - startl;
+        }
+        
+        it2 = it; it2++;
+        if (it2 == se.end()) {
+            startr = n+1; lenr = 0;
+        } else {
+            startr = *it2;
+            ++it2;
+            if (it2 == se.end()) {
+                lenr = n - startr + 1;
+            } else {
+                lenr = (*it2) - startr;
+            }
+        }
+        
+        //If our current interval is of size 1, then there is only 1 case. It merges with the group(s) next to it
+        if (r - l + 1 == 1) {
+            ll totall = lenl + lenr + 1;
+            if (lenl != 0) {
+                ans.erase(ans.find(lenl));
+            }
+            if (lenr != 0) {
+                se.erase(startr);
+                ans.erase(ans.find(lenr));
+            }
+            se.erase(l);
+            ans.erase(ans.find(1));
+            if (lenl == 0) {
+                se.insert(l);
+            }
+            ans.insert(totall);
+        } else { //If our current interval is of size 2+, then there are 3 cases. x is on the left bound, x is on the right bound, and x is in the middle. Note that if n = 2, we won't even get to the third case, so this code is safe for n = 2.
+            if (l == x) {
+                if (lenl == 0) {
+                    ans.insert(1); ans.insert(r-l);
+                    se.insert(l+1);
+                } else {
+                    ans.insert(lenl + 1); ans.insert(r-l);
+                    ans.erase(ans.find(lenl));
+                    se.erase(l);
+                    se.insert(l+1);
+                }
+            } else if (r == x) {
+                if (lenr == 0) {
+                    ans.insert(1); ans.insert(r-l);
+                    se.insert(r);
+                } else {
+                    ans.insert(lenr+1); ans.insert(r-l);
+                    ans.erase(ans.find(lenr));
+                    se.erase(startr);
+                    se.insert(r);
+                }
+            } else {
+                ans.insert(x-l); ans.insert(1); ans.insert(r-x);
+                se.insert(x);
+                se.insert(x+1);
+            }
+            ans.erase(ans.find(r-l+1));
+        }
+        
+        ll tans = *ans.rbegin();
+        cout << tans << " ";
+    }
+    cout << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("herding.in", "r", stdin);
+    freopen("herding.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
