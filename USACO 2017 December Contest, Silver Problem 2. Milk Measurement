@@ -1,0 +1,127 @@
+USACO 2017 December Contest, Silver
+Problem 2. Milk Measurement
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//We will sort the daily observations by day
+struct Event{
+    ll day, id, change;
+};
+
+bool comp(Event e1, Event e2) {
+    return e1.day < e2.day;
+}
+void solve() {
+    ll n, g;
+    cin >> n >> g;
+    
+    Event event[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> event[i].day >> event[i].id >> event[i].change;
+    }
+    sort(event, event+n, comp);
+    
+    //m1[i] will store the milking value of cow with id i
+    map<ll, ll> m1;
+    //m2[i] will store the # of cows with milking value i
+    map<ll, ll> m2;
+    
+    //Initially, all the cows have milking value g. Note that we added a dummy cow with id 0 and milk production g to represent all the unnamed cows who stay at milk production g
+    m2[g]++;
+    m1[0] = g;
+    for (ll i = 0; i < n; i++) {
+        m2[g]++;
+        m1[event[i].id] = g;
+    }
+    
+    //Compute the answer
+    ll ans = 0;
+    for (ll i = 0; i < n; i++) {
+        //top stores the largest milking value and the # of cows who have achieved such a value
+        pair<ll, ll> top = *m2.rbegin();
+        m2.erase(top.first);
+        
+        if (m1[event[i].id] == top.first) { //If the current cow was on top before the current operation
+            //If the cow goes up, but originally had neighbors at the same milking value, then it will change the leaderboard
+            if (event[i].change > 0 && top.second > 1) {
+                ans++;
+            } else if (event[i].change < 0) {
+                //If the cow goes down but originally had neighbors at the same milking value, then it will change the leaderboard
+                if (top.second > 1) {
+                    ans++;
+                } else if ((*m2.rbegin()).first >= (m1[event[i].id] + event[i].change)) { //If the cow goes down, originally had no neighbours, and drops below or equal to the new top milking value, then it will also change the leaderboard.
+                    ans++;
+                }
+            }
+        } else { //If the current cow was somewhere below the top before the current operation
+            if (m1[event[i].id] + event[i].change >= top.first) { //If the cow manages to make it to the top or higher, then the leaderboard changes
+                ans++;
+            }
+        }
+        //Put the original leaderboard back into m2, and then update m2 and m1 based on the cow's changes
+        m2[top.first] = top.second;
+        m2[m1[event[i].id]]--;
+        if (m2[m1[event[i].id]] == 0) {
+            m2.erase(m1[event[i].id]);
+        }
+        m1[event[i].id] += event[i].change;
+        m2[m1[event[i].id]]++;
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    freopen("measurement.in", "r", stdin);
+    freopen("measurement.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
+
