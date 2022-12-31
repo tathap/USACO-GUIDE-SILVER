@@ -1,0 +1,110 @@
+A. The Party and Sweets
+Codeforces Round #559 (Div. 1)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//The optimal solution is to sort the boys and girls. For all the boys except the boy with the highest b value, they will only have to give their minimum amount to each girl. For the boy with the highest value, he will give each girl the maximum amount of candy that she would get. However, there's a catch. If the highest value boy doesn't give any girl his minimum value, then the solution will not be correct. In this case, pick any of the girls and he will give her his minimum value. In order to make up for this, the boy with the second highest value will give that girl her maximum amount. To check if no solution is possible, we need to make sure that the maximum amount each girl receives must be at least the minimum amount of the highest value boy
+void solve() {
+    ll n, m;
+    cin >> n >> m;
+    
+    ll b[n], g[m];
+    
+    for (ll i = 0; i < n; i++) {
+        cin >> b[i];
+    }
+    for (ll i = 0; i < m; i++) {
+        cin >> g[i];
+    }
+    
+    sort(b, b+n); sort(g, g+m);
+    
+    //Check to make sure that all girls can receive the minimum of the highest value boy
+    for (ll i = 0; i < m; i++) {
+        if (g[i] < b[n-1]) {
+            cout << -1 << endl;
+            return;
+        }
+    }
+    
+    //For all the non-highest boys, just make them give their minimum amount to each girl
+    ll ans = 0;
+    for (ll i = 0; i < n-1; i++) {
+        ans += (m * b[i]);
+    }
+    
+    //Make the highest-value boy give all the girls their maxes. Meanwhile, check if he gives any of the girls his min value.
+    bool check = false;
+    for (ll j = 0; j < m; j++) {
+        ans += g[j];
+        if (g[j] == b[n-1]) {
+            check = true;
+        }
+    }
+    
+    //If the highest value boy doesn't give his min to any of the girls, then we'll pick the first index, and swap him with the second highest value boy.
+    if (!check) {
+        ans -= g[0];
+        ans -= b[n-2];
+        ans += b[n-1];
+        ans += g[0];
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
