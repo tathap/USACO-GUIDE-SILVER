@@ -1,0 +1,93 @@
+CSES Problem Set
+Movie Festival II
+Sorting and Searching
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+void solve() {
+    ll n, k;
+    cin >> n >> k;
+    
+    pair<ll, ll> movies[n]; //movies[i].first is the ending time, .second is the starting time
+    for (ll i = 0; i < n; i++) {
+        cin >> movies[i].second >> movies[i].first;
+    }
+    multiset<ll> ms; //stores the ending times of all k members;
+    for (ll i = 0; i < k; i++) {
+        ms.insert(0);
+    }
+    
+    //Sort the movies by earliest ending time taking advantage of c++ sorting
+    sort(movies, movies+n);
+    ll ans = 0;
+    for (ll i = 0; i < n; i++) {
+        //Take the member with the latest ending time who can still watch the movie
+        auto it = ms.upper_bound(movies[i].second);
+        if (it == ms.begin()) {
+            continue;
+        }
+        
+        ll el = *prev(it);
+        ms.erase(ms.find(el));
+        ms.insert(movies[i].first);
+        ans++;
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
