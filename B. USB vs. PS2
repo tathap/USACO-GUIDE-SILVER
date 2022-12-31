@@ -1,0 +1,116 @@
+B. USB vs. PS/2
+Educational Codeforces Round 17
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+void solve() {
+    ll a, b, c;
+    cin >> a >> b >> c;
+    ll m; cin >> m;
+    
+    //Split the 2 types of mouses and sort each type
+    vector<ll> v1, v2;
+    for (ll i = 0; i < m; i++) {
+        ll val; cin >> val;
+        string s; cin >> s;
+        if (s == "USB") {
+            v1.push_back(val);
+        } else {
+            v2.push_back(val);
+        }
+    }
+    
+    sort(v1.begin(), v1.end());
+    sort(v2.begin(), v2.end());
+    
+    //ans.first counts the #of mice bought, ans.second stores the minimum cost.
+    pair<ll, ll> ans = {0, 0};
+    
+    //Go through all the pure USB computers and all the pure PS/2 computers and spend the cheapest computers to fill as many of both as possible
+    ll id1 = 0, id2 = 0;
+    while (a > 0 && id1 < v1.size()) {
+        ans.first++;
+        ans.second += (v1[id1]);
+        a--; id1++;
+    }
+    while (b > 0 && id2 < v2.size()) {
+        ans.first++;
+        ans.second += (v2[id2]);
+        b--; id2++;
+    }
+    
+    //Take the leftover mouses not used, sort them, and buy as many as possible for the hybrid computers
+    vector<ll> v3;
+    for (ll i = id1; i < v1.size(); i++) {
+        v3.push_back(v1[i]);
+    }
+    for (ll i = id2; i < v2.size(); i++) {
+        v3.push_back(v2[i]);
+    }
+    sort(v3.begin(), v3.end());
+    
+    ll id3 = 0;
+    while (c > 0 && id3 < v3.size()) {
+        ans.first++;
+        ans.second += (v3[id3]);
+        c--; id3++;
+    }
+    
+    cout << ans.first << " " << ans.second << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
