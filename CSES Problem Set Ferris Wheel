@@ -1,0 +1,106 @@
+CSES Problem Set
+Ferris Wheel
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Sort the children. Starting from the last kid, find the largest available child to join you in the gondola.
+void solve() {
+    ll n, x;
+    cin >> n >> x;
+    
+    ll p[n]; for (ll i = 0; i < n; i++) cin >> p[i];
+    sort(p, p+n);
+    
+    //ma[i] stores the frequency of weight i
+    map<ll, ll> ma;
+    for (ll i = 0; i < n; i++) {
+        ma[p[i]]++;
+    }
+    
+    //number of gondolas used
+    ll ans = 0;
+    for (ll i = n-1; i >= 0; i--) {
+        //If the current weight has been used move on
+        if (ma.find(p[i]) == ma.end()) {
+            continue;
+        }
+        
+        //Use the current weight
+        ma[p[i]]--;
+        if (ma[p[i]] == 0) {
+            ma.erase(p[i]);
+        }
+        
+        ll goal = x-p[i];
+        auto it = ma.upper_bound(goal);
+        //The goal weight doesn't exist, so our current weight will go alone
+        if (it == ma.begin()) {
+            //
+        } else { //Pair up the goal weight with our current weight and remove one instance of both from the map
+            pair<ll, ll> p = *prev(it);
+            ma[p.first]--;
+            if (ma[p.first] == 0) {
+                ma.erase(p.first);
+            }
+        }
+        ans++;
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
