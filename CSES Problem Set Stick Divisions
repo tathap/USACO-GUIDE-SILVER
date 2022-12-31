@@ -1,0 +1,87 @@
+CSES Problem Set
+Stick Divisions
+Additional Problems
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Idea: Let's try to solve this problem from reverse. We'll try to merge the n sticks efficiently.
+//Observation 1: When we merge 2 sticks, we'll use their sum for future operations. Therefore, some of the original n sticks' costs will be repeated.
+//Observation 2: If we only merge the smallest 2 numbers, we minimize the cost that will have to be repeated! This is called Huffman Coding
+void solve() {
+    ll x, n;
+    cin >> x >> n;
+    
+    priority_queue<ll> pq;
+    for (ll i = 0; i < n; i++) {
+        ll d; cin >> d;
+        pq.push(-1*d);
+    }
+    
+    //Repeatedly merge 2 smallest existing sticks
+    ll ans = 0;
+    while (pq.size() > 1) {
+        ll el1 = pq.top(); pq.pop();
+        ll el2 = pq.top(); pq.pop();
+        el1 *= -1; el2 *= -1;
+        ans +=  (el1 + el2);
+        pq.push(-1 * (el1 + el2));
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
