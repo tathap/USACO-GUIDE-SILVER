@@ -1,0 +1,87 @@
+CSES Problem Set
+Towers
+Sorting and Searching
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Observation: It is always optimal to place the current cube on an existing tower if possible.
+//Observation: Place the current cube on the smallest existing tower possible. If we follow this process, the tops of the towers will remain sorted and we will be able to use binary search
+void solve() {
+    ll n;
+    cin >> n;
+    
+    ll k[n];
+    for (ll i = 0; i < n; i++) cin >> k[i];
+    
+    //towers[i] is the top of the ith tower
+    vector<ll> towers;
+    for (ll i = 0; i < n; i++) {
+        //Find the smallest tower greater than the size of the current cube to place the current cube on
+        auto it = upper_bound(towers.begin(), towers.end(), k[i]);
+        //If no tower exists, add a new tower
+        if (it == towers.end()) {
+            towers.push_back(k[i]);
+        } else { //Add the current cube to the top of the tower we found
+            ll ind = upper_bound(towers.begin(), towers.end(), k[i]) - towers.begin();
+            towers[ind] = k[i];
+        }
+    }
+    
+    cout << towers.size() << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("convention2.in", "r", stdin);
+    freopen("convention2.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
