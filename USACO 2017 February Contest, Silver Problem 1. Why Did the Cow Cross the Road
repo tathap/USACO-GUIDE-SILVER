@@ -1,0 +1,99 @@
+USACO 2017 February Contest, Silver
+Problem 1. Why Did the Cow Cross the Road
+
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+//Sort the cows by their starting point. If 2 cows have the same starting point, then we'll sort by leftmost ending point. This is bc we want to prioritize this cow for chickens bc it has a smaller range
+struct Cow{
+    ll start, end;
+};
+
+bool comp(Cow c1, Cow c2) {
+    if (c1.start == c2.start) {
+        return c1.end < c2.end;
+    }
+    return c1.start < c2.start;
+}
+
+void solve() {
+    ll c, n;
+    cin >> c >> n;
+    
+    ll t[c]; for (ll i = 0; i < c; i++) cin >> t[i];
+    Cow cow[n]; for (ll i = 0; i < n; i++) cin >> cow[i].start >> cow[i].end;
+    
+    //Sort the chickens and the cows
+    sort(t, t+c);
+    sort(cow, cow+n, comp);
+    
+    //2pointers: i for the chickens, j for the cows.
+    ll i = 0; ll j = 0; ll ans = 0;
+    while (i < c && j < n) {
+        //If the current chicken and cow work, move on
+        if (cow[j].start <= t[i] && t[i] <= cow[j].end) {
+            ans++;
+            i++;
+            j++;
+        } else if (t[i] < cow[j].start) { //If the current chicken is left of the current cow, we'll need to move on to the next chicken
+            i++;
+        } else { //If the current chicken is to the right of the current cow, we'll need to move on to the next cow
+            j++;
+        }
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    freopen("helpcross.in", "r", stdin);
+    freopen("helpcross.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+    
+    while (t--) {
+        solve();
+    }
+}
