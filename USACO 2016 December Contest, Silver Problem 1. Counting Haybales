@@ -1,0 +1,94 @@
+USACO 2016 December Contest, Silver
+Problem 1. Counting Haybales
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 1e9;
+const ll MOD = 998244353;
+
+void solve() {
+    ll n, q;
+    cin >> n >> q;
+    
+    vector<ll> a(n);
+    for (ll i = 0; i < n; i++) {
+        cin >> a[i];
+    }
+    sort(a.begin(), a.end());
+    
+    //Use binary search
+    while (q--) {
+        ll l, r;
+        cin >> l >> r;
+        
+        auto it1 = lower_bound(a.begin(), a.end(), l);
+        auto it2 = upper_bound(a.begin(), a.end(), r);
+        
+        //In this case, no haybale is located at a place greater than or equal to a
+        if (it1 == a.end()) {
+            cout << 0 << endl;
+        } else {
+            //In this case, the smallest element greater than or equal to a is also greater than r
+            if ((*it1) > r) {
+                cout << 0 << endl;
+                continue;
+            }
+            
+            //We have a solution.
+            ll ind1 = lower_bound(a.begin(), a.end(), l) - a.begin();
+            ll ind2 = upper_bound(a.begin(), a.end(), r) - a.begin();
+            ind2--;
+            cout << ind2 - ind1 + 1 << endl;
+        }
+    }
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    freopen("haybales.in", "r", stdin);
+    freopen("haybales.out", "w", stdout);
+
+    ll t = 1;
+    //cin >> t;
+
+    while (t--) {
+        solve();
+    }
+}
