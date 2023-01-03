@@ -1,0 +1,160 @@
+USACO 2020 US Open Contest, Silver
+Problem 1. Social Distancing
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 2e16;
+const ll MOD = 998244353;
+
+/*
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+*/
+
+void solve() {
+    ll n, m;
+    cin >> n >> m;
+    
+    pair<ll, ll> grass[m];
+    for (ll i = 0; i < m; i++) {
+        cin >> grass[i].first >> grass[i].second;
+    }
+    sort(grass, grass+m);
+    
+    //Binary search on the largest possible distance between consecutive pairs of cows
+    ll lo = 1, hi = 1e18 + 5;
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        /*
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+        */
+        
+        //Let's greedily place the first cow at the left bound of the leftmost interval. We'll also let curp store the current interval we're on
+        ll cur = grass[0].first;
+        ll numb = 1; //number of cows
+        ll curp = 0; //current interval we're on
+        bool works = true;
+        while (numb < n) {
+            //If we can advance mid spaces and stay in the interval, then let's do that!
+            if (cur+mid <= grass[curp].second) {
+                cur += mid;
+                numb++;
+                continue;
+            } else {
+                //We'll iterate through the patches, starting from the current patch
+                while (curp < m) {
+                    //If this patch has a position that's greater than or equal to our current point by mid units, then use that patch
+                    if (grass[curp].second >= cur+mid) {
+                        break;
+                    } else {
+                        curp++;
+                    }
+                }
+                //We don't have any more patches that work, so there's no solution
+                if (curp == m) {
+                    works = false;
+                    break;
+                }
+                
+                //Use the new patch. Our new current location has to be at least mid units from cur, but it also has to be on the patch
+                cur = max(cur+mid, grass[curp].first);
+                numb++;
+            }
+        }
+        
+        if (works) {
+            lo = mid;
+        } else {
+            hi = mid-1;
+        }
+    }
+    
+    cout << lo << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    
+    freopen("socdist.in", "r", stdin);
+    freopen("socdist.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+
+    while (t--) {
+        solve();
+    }
+}
