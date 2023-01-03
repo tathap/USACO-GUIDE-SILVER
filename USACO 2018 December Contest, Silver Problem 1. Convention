@@ -1,0 +1,130 @@
+USACO 2018 December Contest, Silver
+Problem 1. Convention
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <tuple>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <cstdlib>
+#include <cstdio>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = 2e16;
+const ll MOD = 998244353;
+
+/*
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+*/
+
+void solve() {
+    ll n, m, c;
+    cin >> n >> m >> c;
+    
+    ll cow[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> cow[i];
+    }
+    
+    sort(cow, cow + n);
+    
+    //Binary search on smallest time a cow will wait for
+    ll lo = 0, hi = 1e10;
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        
+        //optimally place buses so that no bus has more than c cows and no cow waits more than mid
+        ll buses = 1;
+        ll lef = 0;
+        for (ll i = 1; i < n; i++) {
+            if (cow[i] - cow[lef] > mid || i-lef+1 > c) {
+                buses++;
+                lef = i;
+            }
+        }
+        
+        //If we have enough buses, then this value works
+        if (buses <= m) {
+            hi = mid;
+        } else {
+            lo = mid+1;
+        }
+    }
+    
+    cout << lo << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    
+    freopen("convention.in", "r", stdin);
+    freopen("convention.out", "w", stdout);
+    
+    ll t = 1;
+    //cin >> t;
+
+    while (t--) {
+        solve();
+    }
+}
