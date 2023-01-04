@@ -1,0 +1,81 @@
+CSES Problem Set
+Multiplication Table
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+//#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+void solve(ll ca) {
+    ll n;
+    cin >> n;
+    
+    //What we will do is binary search on the smallest number that could be the median. In order for a number x to be the median, then it must be the smallest number such that the number of numbers less than or equal to x in the multiplication table has to be greater than or equal to n*n/2 + 1. n*n/2 + 1 is the amount needed to become the median when n is odd
+    ll med = (n*n/2) + 1;
+    ll lo = 1; ll hi = n*n;
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo) / 2;
+        
+        //To compute the #of integers less than mid in the multiplication table, iterate through all the columns in the multiplication table. mid/i tells us the number of multiples of i (column i) less than or equal to mid.
+        ll num = 0;
+        for (ll i = 1; i <= n; i++) {
+            num += (min((mid/i), n));
+        }
+                
+        if (num >= med) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    cout << lo << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    ll t = 1;
+    //cin >> t;
+        
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
