@@ -1,0 +1,85 @@
+F1. Guess the K-th Zero (Easy version)
+Codeforces Round #719 (Div. 3)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+//#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+void solve(ll ca) {
+    ll n, t, k;
+    cin >> n >> t >> k;
+    
+    //Binary Search on first position with the kth 0
+    ll lo = 1; ll hi = n;
+    hi++;
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        
+        //ask a query about the sum of the first mid elements
+        cout << "? " << 1 << " " << mid << endl;
+        fflush(stdout);
+        
+        //read in the response. Then compute the number of 0's as mid - response
+        ll response;
+        cin >> response;
+        response = mid - response;
+        
+        if (response >= k) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    cout << "! " << lo << endl;
+    fflush(stdout);
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    ll t = 1;
+    //cin >> t;
+        
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
