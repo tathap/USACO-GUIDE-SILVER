@@ -1,0 +1,131 @@
+Job Scheduling
+(CEOI12_JOBS)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+void solve(ll ca) {
+    ll n, d, m;
+    cin >> n >> d >> m;
+    
+    pair<ll, ll> requests[m];
+    for (ll i = 0; i < m; i++) {
+        cin >> requests[i].first;
+        requests[i].second = i;
+    }
+    sort(requests, requests+m);
+    //sort the requests by day number, but make sure to store their indexes
+    
+    //Binary Search on the smallest number of
+    ll lo = 1; ll hi = 1e8;
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo) / 2;
+        
+        bool works = true;
+        ll day = 1; ll cnt = mid; //day stores the current day, cnt stores the number of available machines
+        for (ll i = 0; i < m; i++) {
+            //If the current request occurs after the current day, we'll need to skip a couple days and head to the day of th request. Also, make all the machines available again
+            if (day < requests[i].first) {
+                day = requests[i].first;
+                cnt = mid;
+            }
+            
+            //If the difference between the request and the day we got to it is greater than d, then this solution doesn't work
+            if (abs(day - requests[i].first) > d) {
+                works = false;
+                break;
+            }
+            
+            //Use a machine on this request. If we have no more machines left, then we'll have to skip to the next day
+            cnt--;
+            if (cnt == 0) {
+                day++;
+                cnt = mid;
+            }
+        }
+        
+        if (works) {
+            hi = mid;
+        } else {
+            lo = mid+1;
+        }
+    }
+    
+    cout << lo << endl;
+    vector<ll> ans[n];
+    
+    //ans[i] will store a list of all tasks completed in day i with similar logic to that used in the binary search
+    ll day = 1; ll cnt = lo;
+    for (ll i = 0; i < m; i++) {
+        if (day < requests[i].first) {
+            day = requests[i].first;
+            cnt = lo;
+        }
+        
+        cnt--;
+        ans[day-1].push_back(requests[i].second+1);
+        //cout << requests[i].second + 1 << "LOL" << endl;
+        if (cnt == 0) {
+            day++;
+            cnt = lo;
+        }
+    }
+    
+    for (ll i = 0; i < n; i++) {
+        for (auto el: ans[i]) {
+            cout << el << " ";
+        }
+        cout << 0 << endl;
+    }
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    ll t = 1;
+    //cin >> t;
+        
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
