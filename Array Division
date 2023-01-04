@@ -1,0 +1,101 @@
+Array Division
+Sorting and Searching
+CSES
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+void solve(ll ca) {
+    ll n, k;
+    cin >> n >> k;
+    
+    ll x[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> x[i];
+    }
+    
+    //Binary Search for the smallest sum such that the array can be split into k subarrays with sums less than or equal to the sum we're binary searching on
+    ll lo = 1; ll hi = 1e15;
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo) / 2;
+        
+        //Greedily minimize the number of subarrays with sums under mid
+        ll num = 1; ll sum = x[0];
+        for (ll i = 1; i < n; i++) {
+            if (sum + x[i] <= mid) {
+                sum += x[i];
+            } else {
+                num++;
+                sum = x[i];
+            }
+        }
+        
+        //Additionally make sure that all of the elements are smaller than mid
+        bool works = true;
+        for (ll i = 0; i < n; i++) {
+            if (x[i] > mid) {
+                works = false;
+                break;
+            }
+        }
+        
+        if (works && num <= k) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    cout << lo << endl;
+    
+    return;
+}
+
+int main()
+{
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    ll t = 1;
+    //cin >> t;
+        
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
