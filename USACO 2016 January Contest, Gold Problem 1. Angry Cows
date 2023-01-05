@@ -1,0 +1,192 @@
+USACO 2016 January Contest, Gold
+Problem 1. Angry Cows
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+//const ll INF = LLONG_MAX;
+#define INF 2000000000
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+void solve(ll ca) {
+    //Read in the input and sort the haybales
+    ll n;
+    cin >> n;
+    
+    //Since we are gong to have to find our answer to the nearest tenth place, we'll need to consider all decimal places up to the hundreth place. In order to not use doubles, we'll just multiply all of the positions of our haybales by 100, and then divide back by 100 and round to the nearest tenth place once we have an answer
+    ll x[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> x[i];
+        x[i] *= 100;
+    }
+    sort(x, x+n);
+        
+    //dp1[i] computes the smallest radius such that if the radius started from haybale i, it would subsequently explode every single node to its left.
+    ll dp1[n]; dp1[0] = 0; //If an explosion started at the leftmost node, it would only need a value of 0 to destroy itself
+    for (ll i = 1; i < n; i++) {
+        //We can binary search on the smallest radius needed starting at haybale i
+        ll lo = 0; ll hi = 1e15;
+        hi++;
+        while (lo < hi) {
+            ll mid = lo + (hi - lo) / 2;
+            //Find the index of the smallest haybale caught in the explosion of radius mid
+            ll ind = lower_bound(x, x+i, x[i] - mid) - x;
+            //If the found index is the same as our current index, then no haybales were caught in our explosion and we need a higher radius value
+            if (ind == i) {
+                lo = mid+1;
+                continue;
+            }
+            //If the current value of the radius is greater than the power needed by that index by 1 (100 since we multiplied by 100), then if we hit that haybale, it will subsequently be able to explode everyone else on the left. The other case is that the haybale is the first haybale, in which case we already exploded all the haybales on the left
+            if (dp1[ind]+100 <= mid || ind == 0) {
+                hi = mid;
+            } else {
+                lo = mid+1;
+            }
+        }
+        //dp1[i] is the smallest power such that all the haybales on its left including itself are destroyed
+        dp1[i] = lo;
+    }
+    
+    //dp1[i] computes the smallest radius such that if the radius started from haybale i, it would subsequently explode every single node to its right.
+    ll dp2[n]; dp2[n-1] = 0; //If an explosion started at the rightmost node, it would only need a value of 0 to destroy itself
+    for (ll i = n-2; i >= 0; i--) {
+        //We can binary search on the smallest radius needed starting at haybale i
+        ll lo = 0; ll hi = 1e15;
+        hi++;
+        while (lo < hi) {
+            ll mid = lo + (hi - lo) / 2;
+            //Find the index of the smallest haybale caught in the explosion of radius mid
+            ll ind = upper_bound(x, x+n, x[i] + mid) - x;
+            ind--; //Subtract the index by 1, since when we used upper_bound, it found the first index greater than x[i] + mid. We want the haybale right before that.
+            //If the found index is the same as our current index, then no haybales were caught in our explosion and we need a higher radius value
+            if (ind == i) {
+                lo = mid+1;
+                continue;
+            }
+            //If the current value of the radius is greater than the power needed by that index by 1 (100 since we multiplied by 100), then if we hit that haybale, it will subsequently be able to explode everyone else on the right. The other case is that the haybale is the last haybale, in which case we already exploded all the haybales on the right
+            if (dp2[ind]+100 <= mid || ind == n-1) {
+                hi = mid;
+            } else {
+                lo = mid+1;
+            }
+        }
+        //dp1[i] is the smallest power such that all the haybales on its right including itself are destroyed
+        dp2[i] = lo;
+    }
+
+    //Binary Search on the smallest value of r that works
+    ll lo = 0; ll hi = 1e15;
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo) / 2;
+        bool works = false;
+        
+        //We will move a 2*r sliding window. Note that it's always optimal to start the sliding window's leftpoint at a haybale, so that we have space to capture as many haybales on the right as possible
+        for (ll i = 0; i < n; i++) {
+            //Find the index of the largest haybale inside the window starting at haybale i
+            ll ind = upper_bound(x, x+n, x[i] + 2*mid) - x;
+            ind--;
+            
+            //If we can explode all haybales on the left of the sliding window, or if we already have exploded all the haybales on the left; and if we can explode all haybales on the right of the sliding window, or if we have already exploded all the haybales on the right, then we have an answer for a radius of the current power.
+            if (mid >= dp1[i]+100 || i == 0) {
+                if (mid >= dp2[ind]+100 || ind == n-1) {
+                    works = true;
+                    break;
+                }
+            }
+        }
+        if (works) {
+            hi = mid;
+        } else {
+            lo = mid+1;
+        }
+    }
+    
+    //Now that we've found our answer, we need to format it. Divide it by 100 to get the integer amount. Then take the remainder, round it to the nearest tenth, and print it all out.
+    ll num = lo/100;
+    ll rem = lo%100;
+    
+    ll d1 = rem/10;
+    ll d2 = rem%10;
+    
+    if (d2 >= 5) {
+        d1++;
+        if (d1 == 10) {
+            d1 = 0;
+            num++;
+        }
+    }
+    
+    cout << num << "." << d1 << endl;
+
+}
+
+int main()
+{
+    mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("angry.in", "r", stdin);
+    freopen("angry.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+        
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
