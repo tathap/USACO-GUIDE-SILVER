@@ -1,0 +1,151 @@
+C. Magic Ship
+Educational Codeforces Round 60 (Rated for Div. 2)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+
+//Binary Search on the smallest amount of days needed. The answer can be suprisingly large in this problem, so make sure your value for high is super large.
+//To check if we can reach the point in d days, we will first use up all the d moves caused by the winds. Instead of mindlessly simulating the process, we can instead use up all the d moves at the beginning since the order of the moves doesn't matter. After that, check if the distance between the 2 points is less than or equal to d.
+void solve(ll ca)
+{
+    ll x1, y1;
+    cin >> x1 >> y1;
+    ll x2, y2;
+    cin >> x2 >> y2;
+    
+    ll n; string s;
+    cin >> n >> s;
+    
+    ll lo = 1; ll hi = 1e16;
+    hi++;
+    
+    bool works = false;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo) / 2;
+                    
+        vector<ll> dir(4, 0);
+        ll rem = mid%n;
+        for (ll i = 0; i < n; i++) {
+            if (s[i] == 'U') {
+                dir[0] += (mid/n);
+                if (rem > 0) {
+                    dir[0]++;
+                    rem--;
+                }
+            } else if (s[i] == 'D') {
+                dir[1] += (mid/n);
+                if (rem > 0) {
+                    dir[1]++;
+                    rem--;
+                }
+            } else if (s[i] == 'L') {
+                dir[2] += (mid/n);
+                if (rem > 0) {
+                    dir[2]++;
+                    rem--;
+                }
+            } else {
+                dir[3] += (mid/n);
+                if (rem > 0) {
+                    dir[3]++;
+                    rem--;
+                }
+            }
+        }
+        
+        ll a1 = x1 + dir[3] - dir[2], b1 = y1 + dir[0] - dir[1];
+        ll dist = abs(a1 - x2) + abs(b1 - y2);
+        
+        if (dist <= mid) {
+            hi = mid;
+            works = true;
+        } else {
+            lo = mid+1;
+        }
+    }
+    
+    if (!works) {
+        cout << -1 << endl;
+        return;
+    }
+    
+    cout << lo << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("sabotage.in", "r", stdin);
+    freopen("sabotage.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
