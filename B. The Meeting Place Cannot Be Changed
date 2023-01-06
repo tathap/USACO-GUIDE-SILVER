@@ -1,0 +1,148 @@
+B. The Meeting Place Cannot Be Changed
+Codeforces Round #403 (Div. 2, based on Technocup 2017 Finals)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+//Binary Search on the smallest time needed. The key observation is that if a friend can travel for at most i minutes, then it will form an interval [x - i*v, x + i*v], where x is its location, and v is its speed. This interval stores all the places that it can go. Then to check if a time i works, we need to make sure all n intervals intersect atleast once
+void solve(ll ca)
+{
+    ll n;
+    cin >> n;
+    
+    //Store the coordinates and speeds as doubles
+    double x[n];
+    for (ll i = 0; i < n; i++) {
+        ll val; cin >> val;
+        x[i] = 1.000000000f * val;
+    }
+    double v[n];
+    for (ll i = 0; i < n; i++) {
+        ll val; cin >> val;
+        v[i] = 1.000000000f * val;
+    }
+    
+    ll iter = 300; //Since we are binary searching on doubles which are not precise, we need to make sure we are only doing enough iterations to get close to the correct answer
+    double lo = 0.000000f; double hi = 1000000000000.0000000f;
+    hi++;
+    while (lo < hi && iter >= 0) {
+        iter--;
+        
+        //compute mid
+        double mid = 0.50000f * (lo + hi);
+        bool works = false;
+
+        //ve[i].first will be the location of a special point. ve[i].second will be false if it's the left bound of an interval and true if its the right bound of an interval. This was done so we could take advantage of C++'s built in sorting to make sure we sort by locations, and then by left bounds (since false is smaller than true)
+        vector<pair<double, bool>> ve;
+        for (ll i = 0; i < n; i++) {
+            //Compute the left and right bounds
+            double loc1 = 1.00000f * (x[i] - mid*v[i]);
+            double loc2 = 1.00000f * (x[i] + mid*v[i]);
+            
+            ve.push_back({loc1, false});
+            ve.push_back({loc2, true});
+        }
+        //Sort the special points
+        sort(ve.begin(), ve.end());
+        
+        //If we find a location at which all n intervals intersect, then our current time value works
+        ll cn = 0;
+        for (ll i = 0; i < ve.size(); i++) {
+            if (!ve[i].second) {
+                cn++;
+                if (cn == n) {
+                    works = true;
+                    break;
+                }
+            } else {
+                cn--;
+            }
+        }
+        
+        if (works) {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+    
+    //setprecision allows us to make sure we are staying as precise to our answer as possible
+    cout << fixed << setprecision(20) << lo << endl;
+    
+    return;
+}
+
+
+int main()
+{
+    mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("sabotage.in", "r", stdin);
+    freopen("sabotage.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
