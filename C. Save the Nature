@@ -1,0 +1,181 @@
+C. Save the Nature
+Technocup 2020 - Elimination Round 1
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+void solve(ll ca)
+{
+    ll n; cin >> n;
+    
+    //Divide each ticket by 100 to make implementation later on easier. Then sort them.
+    ll p[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> p[i]; p[i]/=100;
+    }
+    sort(p, p+n);
+    
+    ll x, a;
+    cin >> x >> a;
+    ll y, b;
+    cin >> y >> b;
+    
+    //We want to make sure that x is greater than y in order for the implementation to be easier
+    if (x < y) {
+        swap(x, y);
+        swap(a, b);
+    }
+    
+    ll k; cin >> k;
+    
+    //Binary search on the minimum tickets you need to sell.
+    ll lo = 1; ll hi = n;
+    hi++;
+    
+    while (lo < hi) {
+        //In order to check if we need mid tickets, we will first need to compute the #of tickets that are in both programs and prioritize the most expensive tickets for those. Then we will prioritize the next most expensive tickets for the ath tickets (since we made sure that x > y). Finally, use up the remaining largest tickets for the bth tickets.
+        ll mid = lo + (hi - lo) / 2;
+        
+        //Compute the #of tickets in both programs
+        ll numab = mid/__lcm(a, b);
+        //Compute the #of ath tickets
+        ll numa = mid/a - numab;
+        //Compute the #of bth tickets
+        ll numb = mid/b - numab;
+        ll ans = 0;
+        
+        //Greedy approach
+        for (ll i = n-1; i >= 0; i--) {
+            if (numab > 0) {
+                ans += ((x+y)*p[i]);
+                numab--;
+                continue;
+            } else if (numa > 0) {
+                ans += (x*p[i]);
+                numa--;
+            } else if (numb > 0) {
+                ans += (y*p[i]);
+                numb--;
+            } else {
+                break;
+            }
+        }
+        
+        //If we have at least k, then the current value of mid works
+        if (ans >= k) {
+            hi = mid;
+        } else {
+            lo = mid+1;
+        }
+    }
+    
+    //If lo is n+1, that means that even if we organized tickets as optimally as possible, we still wouldn't have enough
+    if (lo == n+1) {
+        cout << -1 << endl;
+        return;
+    }
+    cout << lo << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("sabotage.in", "r", stdin);
+    freopen("sabotage.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
