@@ -1,0 +1,213 @@
+USACO 2016 US Open Contest, Silver
+Problem 3. Closing the Farm
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (wo rks(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n, m;
+vector<ll> adj[MAXN];
+bool visited[MAXN];
+bool isDeleted[MAXN];
+
+void dfs(ll node) {
+    for (auto el: adj[node]) {
+        if (!visited[el] && !isDeleted[el]) {
+            visited[el] = true;
+            dfs(el);
+        }
+    }
+}
+
+bool isConnected() {
+    for (ll i = 0; i < n; i++) {
+        visited[i] = false;
+    }
+    
+    ll cnt = 0;
+    for (ll i = 0; i < n; i++) {
+        if (isDeleted[i]) {
+            continue;
+        }
+        
+        if (!visited[i]) {
+            if (cnt == 1) {
+                return false;
+            }
+            cnt++;
+            visited[i] = true;
+            dfs(i);
+        }
+    }
+    
+    return true;
+}
+
+//We'll brute force this. Build the initial graph. Then whenever a barn is deleted, we'll mark it as deleted and check if the entire farm is connected in O(N+M) time
+void solve(ll ca)
+{
+    cin >> n >> m;
+    for (ll i = 0; i < m; i++) {
+        ll a, b;
+        cin >> a >> b;
+        a--; b--;
+        adj[a].push_back(b);
+        adj[b].push_back(a);
+    }
+    for (ll i = 0; i < n; i++) {
+        isDeleted[i] = false;
+    }
+
+    if (isConnected()) {
+        cout << "YES" << endl;
+    } else {
+        cout << "NO" << endl;
+    }
+    
+    ll perm[n];
+    for (ll i = 0; i < n; i++) {
+        cin >> perm[i];
+    }
+    
+    for (ll i = 0; i < n-1; i++) {
+        isDeleted[perm[i]-1] = true;
+        if (isConnected()) {
+            cout << "YES" << endl;
+        } else {
+            cout << "NO" << endl;
+        }
+    }
+    
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("closing.in", "r", stdin);
+    freopen("closing.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
