@@ -1,0 +1,233 @@
+E. Packmen
+2017-2018 ACM-ICPC, NEERC, Southern Subregional Contest, qualification stage (Online Mirror, ACM-ICPC Rules, Teams Preferred)
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (wo rks(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+//We will binary search on the smallest amount of time needed for the pacmen to eat all the asterisks. Let's assume we've processed all the pacmen before pacman i. At pacman i, if no asterisks remain to its left, we'll eat as many asterisks as possible to its right. Otherwise if some asterisks remain to its left, we need to make sure we get rid of them, and then possibly get rid of some asterisks to the right of pacman i. There are 2 cases. Case 1: Go to the left of pacman i, get rid of all the asterisks, and then go right and get rid of as many asterisks as possible. Case 2: Go to the right and get rid of some asterisks, then turn left and get rid of all the asterisks to the left.
+void solve(ll ca)
+{
+    ll n; cin >> n;
+    string s; cin >> s;
+    
+    //Store the indexes of the pacmen and the asterisks
+    vector<ll> pacman; vector<ll> asterisk;
+    for (ll i = 0; i < n; i++) {
+        if (s[i] == 'P') {
+            pacman.push_back(i);
+        } else if (s[i] == '*') {
+            asterisk.push_back(i);
+        }
+    }
+    
+    ll lo = 0; ll hi = 2*n;
+    hi++;
+    
+    while (lo < hi) {
+        ll mid = lo + (hi - lo) / 2;
+        
+        //Will be false if we run into a situation where a solution is impossible
+        bool works = true;
+        
+        //Notice that as we process all the pacmen, a prefix of the asterisks will be deleted. Therefore, we can use cur to store the index of the first asterisk that hasn't been deleted yet
+        ll cur = 0;
+        for (ll i = 0; i < pacman.size(); i++) {
+            //If there aren't any more asterisks left, we're done
+            if (cur >= asterisk.size()) {
+                break;
+            }
+            
+            if (pacman[i] < asterisk[cur]) {
+                //If no asterisks are on the left of the current pacman, go to the right and get rid of as many asterisks as possible as long as the distance is less than mid. Note that we don't care about returning to the pacman's original position
+                while (cur < asterisk.size() && asterisk[cur] - pacman[i] <= mid) {
+                    cur++;
+                }
+            } else {
+                //Compute the distance between the current pacman and the leftmost undeleted asterisk. If we can't reach it there's no solution.
+                ll dist = pacman[i] - asterisk[cur];
+                if (dist > mid) {
+                    works = false;
+                    break;
+                }
+                
+                //We'll keep incrementing cur until we reach an asterisk that's on the right of pacman[i], or break if we go through all the asterisks.
+                while (cur < asterisk.size() && asterisk[cur] < pacman[i]) {
+                    cur++;
+                }
+                if (cur == asterisk.size()) {
+                    break;
+                }
+                
+                ll d1 = mid - 2*dist; //d1 stores the remaining distance we have if pacman[i] goes to the left, get rids of all the asterisks, and goes back to its original position. We can use this remaining space to get rid of as many extra asterisks as possible
+                ll d2 = mid - dist;
+                d2/=2;
+                //d2 stores the maximum distance we can go to the right, assuming we got d2 to the right, return back to our original position, and then delete all the asterisks to the left
+                
+                //Use binary search to compute the #of extra asterisks we can get on the right with Case 1
+                ll ind = upper_bound(asterisk.begin()+cur, asterisk.end(), pacman[i] + d1) - asterisk.begin();
+                
+                ll cnt1, cnt2;
+                
+                if (ind == cur) {
+                    cnt1 = 0;
+                } else {
+                    cnt1 = ind - cur;
+                }
+                
+                //Use binary search to compute the #of extra asterisks we can get on the right with Case 2
+                ind = upper_bound(asterisk.begin()+cur, asterisk.end(), pacman[i] + d2) - asterisk.begin();
+                
+                if (ind == cur) {
+                    cnt2 = 0;
+                } else {
+                    cnt2 = ind - cur;
+                }
+                
+                //Increment cur by the maximum # of extra asterisks taken from both cases in order to get rid of as many asterisks as possible.
+                cur += max(cnt1, cnt2);
+            }
+        }
+        
+        //If we've used up all the asterisks and works is true, then the current value of mid worked.
+        if (cur == asterisk.size() && works) {
+            hi = mid;
+        } else {
+            lo = mid+1;
+        }
+    }
+    
+    cout << lo << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("sabotage.in", "r", stdin);
+    freopen("sabotage.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
