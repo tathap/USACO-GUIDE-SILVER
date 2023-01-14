@@ -1,0 +1,206 @@
+CCC '10 S3 - Firehose
+Canadian Computing Competition: 2010 Stage 1, Senior #3
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (wo rks(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll h;
+ll houses[3000];
+
+//Compute the distance between house[b] and the point a on a circle
+ll dist(ll a, ll b) {
+    ll ret = min(max(houses[b], a) - min(houses[b], a), 1000000 - max(houses[b], a) + min(houses[b], a));
+    return ret;
+}
+
+//Binary search on the smallest hose length needed. Then run a greedy algorithm. Starting at the first house, we'll place a firehose at exactly h[0] + mid and then greedily iterate through houses until we hit a house j such that j isn't in the range of the current firehose. Then add a firehose at h[j] + mid and try again. In addition, if we aren't able to reach house j from the current firehose but from the original firehose (bc the houses are all on a circle), then all future houses including j will be covered. The second case is going counterclockwise, placing the first firehose at exactly h[0] - mid and doing the above process in reverse. Also note to do calculations modulo 10^6.
+void solve(ll ca)
+{
+    cin >> h;
+    for (ll i = 0; i < h; i++) {
+        cin >> houses[i];
+    }
+    sort(houses, houses+h);
+    
+    ll k; cin >> k;
+    
+    //Binary search on smallest hose length needed
+    ll lo = 0; ll hi = 1000000;
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+
+        //Case 1
+        ll pos = (houses[0] + mid)%1000000; //Current position of current firehose
+        ll og = pos; //Original position of the first firehose
+        ll cnt = 1; //#of firehoses used
+         
+        for (ll i = 1; i < h; i++) {
+            if (dist(pos, i) <= mid) {
+                if (dist(og, i) <= mid) {
+                    break;
+                } else {
+                    pos = (houses[i] + mid)%1000000;
+                    cnt++;
+                }
+            }
+        }
+        
+        pos = (houses[0] + 1000000 - mid)%1000000;
+        og = pos;
+        ll cnt2 = 1;
+        
+        for (ll i = h-1; i > 0; i--) {
+            if (dist(pos, i) > mid) {
+                if (dist(og, i) <= mid) {
+                    break;
+                } else {
+                    pos = (houses[i] + 1000000 - mid)%1000000;
+                    cnt2++;
+                }
+            }
+        }
+        
+        cnt = min(cnt, cnt2);
+        if (cnt <= k) {
+            hi = mid;
+        } else {
+            lo = mid+1;
+        }
+    }
+    
+    cout << lo << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("sabotage.in", "r", stdin);
+    freopen("sabotage.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
