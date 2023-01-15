@@ -1,0 +1,270 @@
+USACO 2021 December Contest, Silver
+Problem 2. Connecting Two Barns
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n, m;
+vector<ll> adj[MAXN];
+bool visited[MAXN];
+
+vector<vector<ll>> comp;
+vector<ll> temp;
+
+//Use dfs to get the connected components
+void dfs(ll node) {
+    for (auto el: adj[node]) {
+        if (!visited[el]) {
+            visited[el] = true;
+            temp.push_back(el);
+            dfs(el);
+        }
+    }
+}
+
+//getDist will compute the cost to connect 2 components. It will do so by iterating over each element of the shorter length vector, and then using binary search on the longer length vector for the field with the closest value, and use that to compute the smallest possible cost.
+ll getDist (vector<ll> &a, vector<ll> &b) {
+    ll ret = INF;
+    
+    if (a.size() > b.size()) {
+        for (auto el: b) {
+            ll ind = lower_bound(a.begin(), a.end(), el) - a.begin();
+            ll ind2 = ind-1;
+            
+            if (ind >= 0 && ind < a.size()) {
+                ret = min(ret, (a[ind]-el)*(a[ind]-el));
+            }
+            if (ind2 >= 0 && ind2 < a.size()) {
+                ret = min(ret, (a[ind2]-el)*(a[ind2]-el));
+            }
+        }
+    } else {
+        for (auto el: a) {
+            ll ind = lower_bound(b.begin(), b.end(), el) - b.begin();
+            ll ind2 = ind-1;
+            
+            if (ind >= 0 && ind < b.size()) {
+                ret = min(ret, (b[ind]-el)*(b[ind]-el));
+            }
+            if (ind2 >= 0 && ind2 < b.size()) {
+                ret = min(ret, (b[ind2]-el)*(b[ind2]-el));
+            }
+        }
+    }
+    
+    return ret;
+}
+
+//We'll first compute all the connected components. We'll sort each component. The 2 most important components are the components with field 1 and field n. Find the index of the component with field 1 and the index of the component with field n. If they are in the same component, the answer is 0 since they are already connected. Otherwise, we'll either connect these 2 components using 1 edge, or we'll find a middle component and connect the 2 main components with this middle component. We'll return the cheapest cost over all such cases and middle components.
+void solve(ll ca)
+{
+    cin >> n >> m;
+    for (ll i = 0; i < n; i++) {
+        adj[i].clear();
+        visited[i] = false;
+    }
+    temp.clear();
+    comp.clear();
+    
+    for (ll i = 0; i < m; i++) {
+        ll a, b; cin >> a >> b; a--; b--;
+        adj[a].push_back(b);
+        adj[b].push_back(a);
+    }
+    
+    //Get all the connected components and sort each component
+    for (ll i = 0; i < n; i++) {
+        if (!visited[i]) {
+            visited[i] = true;
+            temp.push_back(i);
+            dfs(i);
+            
+            sort(temp.begin(), temp.end());
+            comp.push_back(temp);
+            temp.clear();
+        }
+    }
+    
+    //i1 is the index of the component with field 1. i2 is the index of the component with field n.
+    ll i1 = -1; ll i2 = -1;
+    for (ll i = 0; i < comp.size(); i++) {
+        for (auto el: comp[i]) {
+            if (el == 0) {
+                i1 = i;
+            }
+            
+            if (el == n-1) {
+                i2 = i;
+            }
+        }
+    }
+
+    //If field 1 and field n are in the same component, the answer is 0 since they're already connected
+    if (i1 == i2) {
+        cout << 0 << endl;
+        return;
+    }
+    
+    ll dist1[comp.size()], dist2[comp.size()]; //dist1[i] stores the minimum cost to connect component i with component i1 (the component with 0). dist2[i] stores the minimum cost to component i2 (the compnent with n-1)
+    
+    //Compute dist1 and dist2. Note how we're passing the vectors by reference which allows us to escape with O(1) time complexity. Since we aren't damaging and/or changing the values of the vectors referenced, this will be fine.
+    for (ll i = 0; i < comp.size(); i++) {
+        if (i == i1) {
+            dist1[i] = 0;
+        } else {
+            dist1[i] = getDist(comp[i], comp[i1]);
+        }
+    
+        if (i == i2) {
+            dist2[i] = 0;
+        } else {
+            dist2[i] = getDist(comp[i], comp[i2]);
+        }
+    }
+    
+    //dist1[i2] is the cost connecting component i1 and component i2 with no middle component
+    ll ans = dist1[i2];
+    
+    //Iterate over the middle component and find the best answer
+    for (ll i = 0; i < comp.size(); i++) {
+        if (i == i1 || i == i2) {
+            continue;
+        }
+        ans = min(ans, dist1[i]+dist2[i]);
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("wormsort.in", "r", stdin);
+    freopen("wormsort.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
