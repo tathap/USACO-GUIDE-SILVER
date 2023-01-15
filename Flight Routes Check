@@ -1,0 +1,211 @@
+Flight Routes Check
+Graph Algorithms
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (wo rks(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n, m;
+vector<ll> adj[MAXN], adj2[MAXN];
+//visited[i] checks if we can reach city i from city 0. visited2[i] checks if city i can reach city 0
+bool visited[MAXN], visited2[MAXN];
+
+void dfs1(ll node) {
+    for (auto el: adj[node]) {
+        if (!visited[el]) {
+            visited[el] = true;
+            dfs1(el);
+        }
+    }
+}
+
+void dfs2(ll node) {
+    for (auto el: adj2[node]) {
+        if (!visited2[el]) {
+            visited2[el] = true;
+            dfs2(el);
+        }
+    }
+}
+
+//The Key Observation is that in order to be able to travel from any city to any other city on a directed graph, then all the cities must be able to reach a certain city (let's say city 0), and that city 0 must be able to reach all the other cities.
+
+//We will store 2 graphs. The first graph will store the edges provided to check the second condition, while the second graph will reverse the edges so that we can make sure that all the other cities can reach city 0. By reversing the edges, we'll be able to launch a DFS from city 0 and make sure that everyone else can come to city 0.
+
+//We will have 2 DFS's to check both conditions. If we can visit all n cities in both DFSs, then all the cities are connected. Otherwise, if visited[k] = false for some k, then city 0 can't reach city k. Another case is if visited2[k] = false for some k, then city k can't reach city 0
+
+void solve(ll ca)
+{
+    cin >> n >> m;
+    for (ll i = 0; i < m; i++) {
+        ll a, b;
+        cin >> a >> b;
+        a--; b--;
+        
+        adj[a].push_back(b);
+        adj2[b].push_back(a);
+    }
+    
+    for (ll i = 0; i < n; i++) {
+        visited[i] = false;
+        visited2[i] = false;
+    }
+    
+    visited[0] = true;
+    visited2[0] = true;
+    
+    dfs1(0); dfs2(0);
+    
+    ll v1 = -1; ll v2 = -1;
+    for (ll i = 0; i < n; i++) {
+        if (!visited[i]) {
+            v1 = i;
+            break;
+        } else if (!visited2[i]) {
+            v2 = i;
+            break;
+        }
+    }
+    
+    if (v1 == -1 && v2 == -1) {
+        cout << "YES" << endl;
+    } else if (v1 != -1) {
+        cout << "NO" << endl;
+        cout << 1 << " " << v1+1 << endl;
+    } else {
+        cout << "NO" << endl;
+        cout << v2+1 << " " << 1 << endl;
+    }
+
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("fenceplan.in", "r", stdin);
+    freopen("fenceplan.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
