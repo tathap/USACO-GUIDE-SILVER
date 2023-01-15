@@ -1,0 +1,200 @@
+USACO 2022 February Contest, Silver
+Problem 1. Redistributing Gifts
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 505;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 998244353;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n;
+vector<ll> adj[MAXN];
+bool go[MAXN][MAXN]; //go[i][j] checks if it is possible to travel from node i to node j
+ll pref[MAXN][MAXN]; //pref[i] stores the preferences for the ith cow
+
+void dfs(ll node, ll orig) {
+    for (auto el: adj[node]) {
+        if (!go[orig][el]) {
+            go[orig][el] = true;
+            dfs(el, orig);
+        }
+    }
+}
+
+//Construct a graph where there is a directed edge from node a to node b if cow a is willing to give up its gift for gift b.
+//Note that if we can travel from node a to node b and if we can travel from node b to node a on this directed graph, then cow a and cow b can eventually end up with each other's gifts after some series of swaps
+void solve(ll ca)
+{
+    cin >> n;
+    
+    //Read in the preferences of the cows and construct the graph
+    for (ll i = 0; i < n; i++) {
+        bool seen = false;
+        for (ll j = 0; j < n; j++) {
+            cin >> pref[i][j]; pref[i][j]--;
+            if (seen) {
+                continue;
+            }
+            
+            if (pref[i][j] == i) {
+                seen = true;
+                continue;
+            }
+            
+            adj[i].push_back(pref[i][j]);
+        }
+    }
+    
+    //Intialize go to be false
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < n; j++) {
+            go[i][j] = false;
+        }
+    }
+    
+    //Run a DFS from each node i to see how many nodes i can reach.
+    for (ll i = 0; i < n; i++) {
+        go[i][i] = true;
+        dfs(i, i);
+    }
+    
+    //For each of the cows, we'll check if it can get the gifts that it prioritizes most. In order for cow i to be able to get some gift j, then go[i][j] and go[j][i] must both be true
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < n; j++) {
+            if (go[i][pref[i][j]] && go[pref[i][j]][i]) {
+                cout << pref[i][j] + 1 << endl;
+                break;
+            }
+        }
+    }
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("wormsort.in", "r", stdin);
+    freopen("wormsort.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
