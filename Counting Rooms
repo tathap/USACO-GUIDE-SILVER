@@ -1,0 +1,182 @@
+Counting Rooms
+Graph Algorithms
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 2e3;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+//const ll MOD = 998244353;
+ll MOD;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n, m;
+char grid[MAXN][MAXN];
+ll dr[4] = {0, 1, 0, -1};
+ll dc[4] = {1, 0, -1, 0};
+
+void dfs(ll row, ll col) {
+    for (ll k = 0; k < 4; k++) {
+        ll nr = row + dr[k];
+        ll nc = col + dc[k];
+        if (nr >= 0 && nr < n && nc >= 0 && nc < m) {
+            if (grid[nr][nc] == '.') {
+                grid[nr][nc] = '#';
+                dfs(nr, nc);
+            }
+        }
+    }
+}
+
+//Simple floodfill. Find the number of connected compoennts of '.' (floor squares)
+
+void solve(ll ca)
+{
+    cin >> n >> m;
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < m; j++) {
+            cin >> grid[i][j];
+        }
+    }
+    
+    ll ans = 0;
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < m; j++) {
+            if (grid[i][j] == '.') {
+                ans++;
+                grid[i][j] = '#';
+                dfs(i, j);
+            }
+        }
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("revegetate.in", "r", stdin);
+    freopen("revegetate.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
