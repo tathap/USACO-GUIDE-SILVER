@@ -1,0 +1,218 @@
+USACO 2019 February Contest, Silver
+Problem 3. The Great Revegetation
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+//const ll MOD = 998244353;
+ll MOD;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n, m;
+vector<pair<char, ll>> adj[MAXN];
+ll mark[MAXN];
+bool works;
+
+void dfs(ll node, ll col) {
+    if (!works) {
+        return;
+    }
+    for (auto el: adj[node]) {
+        if (el.first == 'S') {
+            if (mark[el.second] == -1) {
+                mark[el.second] = col;
+                dfs(el.second, col);
+            } else if (mark[el.second] == mark[node]) {
+                //
+            } else {
+                works = false;
+                return;
+            }
+        } else {
+            if (mark[el.second] == -1) {
+                mark[el.second] = 1 - col;
+                dfs(el.second, 1 - col);
+            } else if (mark[el.second] == mark[node]) {
+                works = false;
+                return;
+            } else {
+                //
+            }
+        }
+        
+        if (!works) {
+            return;
+        }
+    }
+    if (!works) {
+        return;
+    }
+}
+
+//Let's create a graph where the edges are the same/different relationships. Let's say that we have k connected components formed with these edges. Since the answer for each component is seperate, let's consider a single component. If all the conditions in the component are respected we'll only have 2 possible colorings in this component. If all the components' conditions are respected, the answer is 2^k. However if even one of the components' conditions is impossible, then the answer for the whole problem is 0, since there's no solution.
+//Solution: Create the graph and try to give each node a color. Check to see if all the conditions are valid. If even one condition can't be valid, the answer is 0. Otherwise, we'll count the total number of connected components k. 2^k in binary is 100000...000 with k 0's, so print that.
+
+void solve(ll ca)
+{
+    cin >> n >> m;
+    for (ll i = 0; i < m; i++) {
+        char c; ll u, v;
+        cin >> c >> u >> v;
+        adj[u-1].push_back({c, v-1});
+        adj[v-1].push_back({c, u-1});
+    }
+    
+    for (ll i = 0; i < n; i++) {
+        mark[i] = -1;
+    }
+    
+    works = true; ll c = 0;
+    for (ll i = 0; i < n; i++) {
+        if (mark[i] == -1) {
+            c++;
+            mark[i] = 0;
+            dfs(i, 0);
+            
+            if (!works) {
+                cout << 0 << endl;
+                return;
+            }
+        }
+    }
+    
+    cout << 1;
+    for (ll i = 0; i < c; i++) {
+        cout << 0;
+    }
+    cout << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("revegetate.in", "r", stdin);
+    freopen("revegetate.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
