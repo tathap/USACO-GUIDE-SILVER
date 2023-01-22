@@ -1,0 +1,225 @@
+Among Us - INOI 2021
+Problem Code:
+AMONGUS2
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n, q;
+vector<pair<ll, ll>> adj[MAXN];
+ll visited[MAXN];
+
+//Stores the frequency of each color
+ll c1, c2;
+
+bool works; //Will be false if we find any contradiction
+void dfs(ll node, ll col) {
+    //Mark the current node as visited and update teh frequency counters
+    if (visited[node] == -1) {
+        visited[node] = col;
+        if (col == 0) {
+            c1++;
+        } else {
+            c2++;
+        }
+    } else {
+        return;
+    }
+    
+    //Update neighbours and check for contradictions
+    for (auto el: adj[node]) {
+        if (visited[el.first] == -1) {
+            if (el.second == 1) {
+                dfs(el.first, 1-col);
+            } else {
+                dfs(el.first, col);
+            }
+            if (!works) {
+                return;
+            }
+        } else {
+            if (el.second == 1 && visited[el.first] != visited[node]) {
+                //no contradiction
+            } else if (el.second == 2 && visited[el.first] == visited[node]) {
+                //no contradiction
+            } else {
+                works = false;
+                return;
+            }
+        }
+    }
+}
+
+//Observation: If 2 nodes are connected by an edge of type 1, then one must be an imposter and one must be a crewmate. If they're connected by an edge of type 2, both must be crewmates or both must be imposters.
+//Observation2: Each connected component has either no solutions (if we found a contradiction) or 2 solutions (depending on whether we set the first node to be a crewmate or an imposter).
+//Algorithm: Read in the graph, and for each connected component, compute a coloring of the graph such that if 2 nodes are connected by a 1, they have different colors, and if they're connected by a 2, they have the same color. If we ever find a contradiction, there is no solution.
+//Otherwise, we need to maximize the #of imposters. For each component, store the #of nodes that are of each color. For each component, pick the color with more nodes and let those nodes be the imposters. This will maximize the # of imposters.
+
+void solve(ll ca)
+{
+    cin >> n >> q;
+    for (ll i = 0; i < n; i++) {
+        adj[i].clear();
+        visited[i] = -1;
+    }
+    
+    for (ll i = 0; i < q; i++) {
+        ll type, a, b;
+        cin >> type >> a >> b;
+        adj[a-1].push_back({b-1, type});
+        adj[b-1].push_back({a-1, type});
+    }
+    
+    //Solve each component
+    ll ans = 0;
+    for (ll i = 0; i < n; i++) {
+        if (visited[i] == -1) {
+            works = true;
+            c1 = 0; c2 = 0;
+            dfs(i, 0);
+            
+            if (!works) {
+                cout << -1 << endl;
+                return;
+            }
+            
+            //Update the #of imposters by picking the color with the higher frequency
+            ans += max(c1, c2);
+        }
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("perimeter.in", "r", stdin);
+    freopen("perimeter.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
