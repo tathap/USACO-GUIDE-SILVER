@@ -1,0 +1,333 @@
+A. Graph
+Baltic Olympiad in Informatics 2020, Day 2 (IOI, Unofficial Mirror Contest, Unrated)
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+//Input of the graph
+ll n, m;
+vector<pair<ll, double>> adj[MAXN];
+
+//visited[i] checks if node i has been visited
+bool visited[MAXN];
+//val[i] will store the real value that we'll assign to each node
+double val[MAXN];
+
+//When we initally iterate over the components, our value for each node in terms of x will look like ax + b. fac[i] will store the value of a for node i, while con[i] will store the value of b for node i
+double fac[MAXN]; double con[MAXN];
+//x will store a real solution for the current component if we found it
+double x;
+
+//We will use this to check for equality of floats.
+double eps = 0.0000001f;
+
+//Will store the list of nodes in the current component
+vector<ll> list;
+
+//aSol will be true if we found a value of x that could be our solution. works will be fals if we found a contradiction
+bool aSol; bool works;
+
+//This dfs will compute each node's value in terms of x, and look for any contradictions or find a way to compute x.
+void dfs(ll node) {
+    //Mark the current node as visited and add it to a list of visited nodes
+    if (!visited[node]) {
+        visited[node] = true;
+        list.push_back(node);
+    } else {
+        return;
+    }
+    
+    //Iterate over each neighbour
+    for (auto el: adj[node]) {
+        //If we haven't visited the node, compute the value of that node in terms of x based on the fact that the sum of the 2 nodes has to be el.second
+        if (!visited[el.first]) {
+            fac[el.first] = -1*fac[node];
+            con[el.first] = el.second - con[node];
+            
+            dfs(el.first);
+            
+            //If we found a contradiction or a solution, we don't need to run this dfs anymore
+            if (!works || aSol) {
+                return;
+            }
+        } else {
+            //We will solve for x since both nodes have already been computed.
+            //After computing both s1 and s2, the equation will look like s1x = s2.
+            //If s1 = 0 and s2 = 0, then we found no useful information about x and can continue
+            //If s1 = 0 but s2 != 0, then it's impossible to find any real solution and thus we have found a contradiction
+            //Otherwise, x = s2/s1 and we have found a solution.
+            double s1 = fac[node] + fac[el.first];
+            double s2 = el.second - con[node] - con[el.first];
+            if (s1 == 0){
+                if (s2 == 0) {
+                    continue;
+                } else {
+                    works = false;
+                    return;
+                }
+            } else {
+                x = s2/s1;
+                aSol = true;
+                return;
+            }
+        }
+    }
+}
+
+//We will assign real values to each node
+void dfs2(ll node, double cval) {
+    if (!visited[node]) {
+        visited[node] = true;
+    } else {
+        return;
+    }
+    
+    for (auto el: adj[node]) {
+        //If we haven't visited the node, compute its real value
+        if (!visited[el.first]) {
+            val[el.first] = el.second - cval;
+            dfs2(el.first, val[el.first]);
+            if (!works) {
+                return;
+            }
+        } else {
+            //Othersiwe, check to make sure that the 2 nodes satsify the condition between them. Note that since we are dealing with floats, precision is not high. So we need to make sure that the difference between the sum of the 2 nodes and the value that the sum has to be equal to is as small as possible.
+            if (abs(val[node] + val[el.first] - el.second) <= eps) {
+                //works
+            } else {
+                works = false;
+                return;
+            }
+        }
+    }
+}
+
+//Observation 1: If we find a solution for each of the connected components, then we can use the solution for each component independently
+//Algorithm: In order to solve for a specific connected component, what we'll do is we'll let the first node be equal to x. Then we'll update the values for all nodes we reach in terms of x.
+//If we find an edge that connects 2 nodes that have been visited, set them equal to each other. If we find an appropriate value of x, then that value is the solution for our compenent. We'll then restart the dfs but we'll update the real values of each node instead of updating their values in terms of x. If this works, then we've found a solution. Otherwise if there's a contradiction with the value of x we found, then there's no solution.
+//Otherwise if a contradiction occurs in an edge, there is no solution.
+//In addition, the component might be a tree or another type of graph that prevents us from finding the value of x. In this case, we need to minimize the absolution sum. Note that the absolute sum will be of the form |x - a_1| + |x - a_2| + . . . + |x - a_k| where there are k nodes in the connected component. It's optimal to pick the value of x as the median of array a.
+//Run this algorithm for all components and we'll get our answer
+void solve(ll ca)
+{
+    //Read in the input
+    cin >> n >> m;
+    
+    for (ll i = 0; i < m; i++) {
+        ll a, b; double c;
+        cin >> a >> b >> c;
+        a--; b--;
+        adj[a].push_back({b, c});
+        adj[b].push_back({a, c});
+    }
+    
+    //Mark all the nodes as unvisited
+    for (ll i = 0; i < n; i++) {
+        visited[i] = false;
+    }
+    
+    //Iterate over each component
+    for (ll i = 0; i < n; i++) {
+        if (!visited[i]) {
+            //We haven't found a solution or a contradiction yet, so set aSol to true and works to false
+            aSol = false;
+            works = true;
+            
+            //Set the first node in the component to x and run a dfs
+            fac[i] = 1; con[i] = 0;
+            dfs(i);
+            
+            //If we found a contradiction, there is no solution
+            if (!works) {
+                cout << "NO" << endl;
+                return;
+            }
+            
+            if (aSol) {
+                //If we found a solution, we'll mark all the nodes that we visited as unvisited and we'll run a dfs again. This time, we'll be computing the real values to assign to each node
+                
+                for (auto el: list) {
+                    visited[el] = false;
+                }
+                works = true;
+                
+                //We will set the starting node equal to the value we found for it
+                val[i] = x;
+                dfs2(i, x);
+                
+                //If we found a contradiction, then there is no solution
+                if (!works) {
+                    cout << "NO" << endl;
+                    return;
+                }
+            } else {
+                //Since we couldn't find a value for x, that means we must pick the best x to optimize the absolute sum
+                //Note that each node has a value of the form x - b or -x + b. You can see this with a couple of examples. Since we want to find the median of all the values a in the following absolute sum:
+                // |x - a_1| + |x - a_2| + . . . + |x - a_k|. We need to find the median of array a. So we'll build the array, sort it, and then compute the median. In the case where the value of the node is x - b, then the value we need to add to the array is b. Otherwise, we need to add -1*b.
+                vector<double> med;
+                //Add the appropriate values to the array
+                for (auto el: list) {
+                    if (fac[el] == 1) {
+                        med.push_back(-1*con[el]);
+                    } else {
+                        med.push_back(con[el]);
+                    }
+                }
+                
+                //Sort the array and compute its median
+                sort(med.begin(), med.end());
+                if (med.size()%2 == 1) {
+                    val[i] = med[med.size()/2];
+                } else {
+                    val[i] = (med[med.size()/2] + med[med.size()/2 - 1]) / (2.000000f);
+                }
+                
+                //For each node in the list, compute its value since we know it's value interms of x (the value of the first term, so val[i]).
+                for (auto el: list) {
+                    val[el] = (fac[el] * val[i]) + con[el];
+                }
+            }
+            
+            //Empty the list to prepare for the next component
+            list.clear();
+        }
+    }
+    
+    //Print the real values we found to a high precision
+    cout << "YES" << endl;
+    for (ll i = 0; i < n; i++) {
+        cout << setprecision(20) << fixed << val[i] << " ";
+    }
+    cout << endl;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("perimeter.in", "r", stdin);
+    freopen("perimeter.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
