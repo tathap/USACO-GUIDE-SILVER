@@ -1,0 +1,230 @@
+USACO 2014 January Contest, Silver
+Problem 2. Cross Country Skiing
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 505;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n, m;
+ll elevations[MAXN][MAXN];
+ll waypoint[MAXN][MAXN];
+
+pair<ll, ll> star = {-1, -1};
+
+bool visited[MAXN][MAXN];
+
+ll dr[4] = {0, 1, 0, -1};
+ll dc[4] = {1, 0, -1, 0};
+void dfs(ll r, ll c, ll med) {
+    for (ll k = 0; k < 4; k++) {
+        ll nr = r + dr[k];
+        ll nc = c + dc[k];
+        if (nr >= 0 && nr < n && nc >= 0 && nc < m) {
+            if (!visited[nr][nc] && abs(elevations[r][c] - elevations[nr][nc]) <= med) {
+                visited[nr][nc] = true;
+                dfs(nr, nc, med);
+            }
+        }
+    }
+}
+
+bool works(ll med) {
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < m; j++) {
+            visited[i][j] = false;
+        }
+    }
+    visited[star.first][star.second] = true;
+    dfs(star.first, star.second, med);
+    
+    bool ret = true;
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < m; j++) {
+            if (!visited[i][j] && waypoint[i][j] == 1) {
+                ret = false;
+                break;
+            }
+        }
+        if (!ret) {
+            break;
+        }
+    }
+        
+    return ret;
+}
+
+//If no waypoints exist, the answer is 0.
+//Idea: Binary search on the minimum difficulty needed.
+//To check if a certain difficulty works, start from one waypoint and do a floodfill to check if the other waypoints can be reached
+
+void solve(ll ca)
+{
+    cin >> n >> m;
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < m; j++) {
+            cin >> elevations[i][j];
+        }
+    }
+    
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < m; j++) {
+            cin >> waypoint[i][j];
+            if (waypoint[i][j] == 1) {
+                star = {i, j};
+            }
+        }
+    }
+    
+    if (star.first == -1) {
+        cout << 0 << endl;
+        return;
+    }
+        
+    ll lo = 0; ll hi = 1e10;
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    cout << lo << endl;
+
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    
+    freopen("ccski.in", "r", stdin);
+    freopen("ccski.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
+//listen to mall song
