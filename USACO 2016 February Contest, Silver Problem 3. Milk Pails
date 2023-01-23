@@ -1,0 +1,214 @@
+USACO 2016 February Contest, Silver
+Problem 3. Milk Pails
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 105;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll x, y, k, m;
+
+//Let dp[i][j] store the fewest number of moves such that bucket 1 is filled up with i units and bucket 2 is filled up with j units
+ll dp[MAXN][MAXN];
+
+//Compute the dp values
+void dfs(ll am1, ll am2) {
+    //Empty the left pail
+    if (dp[am1][am2] + 1 < dp[0][am2]) {
+        dp[0][am2] = dp[am1][am2] + 1;
+        dfs(0, am2);
+    }
+    
+    //Empty the right pail
+    if (dp[am1][am2] + 1 < dp[am1][0]) {
+        dp[am1][0] = dp[am1][am2] + 1;
+        dfs(am1, 0);
+    }
+    
+    //Fill the left pail completely to the top
+    if (dp[am1][am2] + 1 < dp[x][am2]) {
+        dp[x][am2] = dp[am1][am2] + 1;
+        dfs(x, am2);
+    }
+    
+    //Fill the right pail completely to the top
+    if (dp[am1][am2] + 1 < dp[am1][y]) {
+        dp[am1][y] = dp[am1][am2] + 1;
+        dfs(am1, y);
+    }
+    
+    //Transfer from left pail to right
+    ll pour = min(am1, y-am2);
+    if (dp[am1][am2] + 1 < dp[am1-pour][am2+pour]) {
+        dp[am1-pour][am2+pour] = dp[am1][am2] + 1;
+        dfs(am1-pour, am2+pour);
+    }
+    
+    //Transfer from right pail to left
+    pour = min(x-am1, am2);
+    if (dp[am1][am2] + 1 < dp[am1+pour][am2-pour]) {
+        dp[am1+pour][am2-pour] = dp[am1][am2] + 1;
+        dfs(am1+pour, am2-pour);
+    }
+}
+
+void solve(ll ca)
+{
+    cin >> x >> y >> k >> m;
+
+    //Initialize all the dp values to INF
+    for (ll i = 0; i <= x; i++) {
+        for (ll j = 0; j <= y; j++) {
+            dp[i][j] = INF;
+        }
+    }
+    
+    //Since both buckets start off as empty, dp[0][0] = 0
+    dp[0][0] = 0;
+    dfs(0, 0);
+    
+    //answer stores the minimum absolute difference between the sum of the milk-values of the buckets and m.
+    //We can initialize ans to m since there is a case where we leave all the buckets empty, making the difference m.
+    ll ans = m;
+    for (ll i = 0; i <= x; i++) {
+        for (ll j = 0; j <= y; j++) {
+            //If we can reach this state in under k moves, update the answer
+            if (dp[i][j] <= k) {
+                ans = min(ans, abs(i+j-m));
+            }
+        }
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    freopen("pails.in", "r", stdin);
+    freopen("pails.out", "w", stdout);
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
+//listen to mall song
