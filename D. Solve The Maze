@@ -1,0 +1,245 @@
+D. Solve The Maze
+Codeforces Round #648 (Div. 2)
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 100;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+//Input
+ll n, m;
+char grid[MAXN][MAXN];
+bool visited[MAXN][MAXN];
+
+ll cg;
+ll tg, tb;
+
+//Will help us traverse each of the 4 neighbours of a cell
+ll dr[4] = {0, 1, 0, -1};
+ll dc[4] = {1, 0, -1, 0};
+
+//stores the locations of all the bad guys we encounter
+vector<pair<ll, ll>> badguys;
+void dfs(ll row, ll col) {
+    for (ll k = 0; k < 4; k++) {
+        ll nr = row + dr[k];
+        ll nc = col + dc[k];
+        if (nr >= 0 && nr < n && nc >= 0 && nc < m) {
+            if (!visited[nr][nc] && grid[nr][nc] != '#') {
+                visited[nr][nc] = true;
+                if (grid[nr][nc] == 'G') {
+                    tg++;
+                } else if (grid[nr][nc] == 'B') {
+                    tb++;
+                    badguys.push_back({nr, nc});
+                }
+                dfs(nr, nc);
+            }
+        }
+    }
+}
+
+//Observation 1: If there aren't any good guys on the grid, it's optimal to cover up cell (n, m), guaranteeing us a solution.
+//Observation 2: If we look at the connected components of cells that can travel between each other without walls, we realize that the most important component is the one connected to the exit cell. If some good guys aren't in this component, it will be impossible for them to ever reach the exit and the answer will be No. Otherwise, we'll have some bad guys (possibly 0). It's optimal to try to cover up as many of the 4 sides of each of the bad guys as possible. This will minimize the damage to all the good guys.
+//Note that even if this might block a good guy, that means that if we hadn't placed that wall, the bad guy would also have been able to escape. So it's optimal to place walls on as many of the 4 sides of each of the bad guys that are empty.
+
+void solve(ll ca)
+{
+    cin >> n >> m;
+    
+    //cg will store the #of good guys in the initial grid
+    cg = 0;
+    
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < m; j++) {
+            cin >> grid[i][j];
+            visited[i][j] = false;
+            if (grid[i][j] == 'G') {
+                cg++;
+            }
+        }
+    }
+    
+    //If there aren't any good guys, the answer is Yes.
+    if (cg == 0) {
+        cout << "YES" << endl;
+        return;
+    }
+    
+    //tg and tb will store the #of good and bad guys respectively that we find in the component of the exit cell
+    tg = 0; tb = 0;
+    
+    visited[n-1][m-1] = true;
+    badguys.clear();
+    
+    //Do a floodfill esque approach to identify the connected component of the exit cell
+    dfs(n-1, m-1);
+
+    //If not all of the good guys were in the exit cell's component, then there's no solution.
+    if (tg != cg) {
+        cout << "NO" << endl;
+        return;
+    }
+    
+    //Iterate through each of the bad guys and place as many walls as possible surrounding them
+    for (auto el: badguys) {
+        for (ll k = 0; k < 4; k++) {
+            ll nr = el.first + dr[k];
+            ll nc = el.second + dc[k];
+            if (nr >= 0 && nr < n && nc >= 0 && nc < m) {
+                if (grid[nr][nc] == '.') {
+                    grid[nr][nc] = '#';
+                }
+            }
+        }
+    }
+    
+    for (ll i = 0; i < n; i++) { for (ll j = 0; j < m; j++) { visited[i][j] = false; } }
+    visited[n-1][m-1] = true;
+    tg = 0; tb = 0;
+    
+    //Reset all our counters and run the same dfs again
+    dfs(n-1, m-1);
+    
+    //If all the good guys were able to exit, but 0 bad guys were, then the answer is Yes. Otherwise, the answer is No
+    if (tg == cg && tb == 0) {
+        cout << "YES" << endl;
+    } else {
+        cout << "NO" << endl;
+    }
+    
+    
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    /*
+    freopen("perimeter.in", "r", stdin);
+    freopen("perimeter.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
+//listen to mall song
