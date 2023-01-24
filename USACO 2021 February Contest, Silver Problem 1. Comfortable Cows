@@ -1,0 +1,250 @@
+USACO 2021 February Contest, Silver
+Problem 1. Comfortable Cows
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 5e5 + 2;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+const ll MAXVAL = 2300;
+
+ll n;
+ll grid[MAXVAL][MAXVAL]; //grid[i][j] is 0 if empty, 1 if it has a permanent cow, 2 if it has a temporary cow
+ll ans = 0; //The answer is the minimum # of temporary cows we need. This counter will store a running sum of all the temporary cows we have used so far as we add or remove them.
+
+ll dr[4] = {0, 1, 0, -1};
+ll dc[4] = {1, 0, -1, 0};
+
+//Given a cell, this function will allow us to compute the #of neighbours to this cell that are cows
+ll neighbours(ll r, ll c) {
+    ll cnt = 0;
+    for (ll k = 0; k < 4; k++) {
+        ll nr = r + dr[k];
+        ll nc = c + dc[k];
+        
+        if (nr >= 0 && nr < MAXVAL && nc >= 0 && nc < MAXVAL) {
+            if (grid[nr][nc] != 0) {
+                cnt++;
+            }
+        }
+    }
+    return cnt;
+}
+
+//dfs(r, c) will place temporary cows to make cell (r, c) uncomfortable.
+void dfs(ll r, ll c) {
+    //If a cell was reached by the dfs, then it had to have had exactly 3 neighbours and it had to also have been a cow.
+    
+    //Find the one neighbour which doesn't have a cow
+    ll nr, nc;
+    for (ll k = 0; k < 4; k++) {
+        nr = r + dr[k];
+        nc = c + dc[k];
+        
+        if (nr >= 0 && nr < MAXVAL && nc >= 0 && nc < MAXVAL) {
+            if (grid[nr][nc] == 0) {
+                break;
+            }
+        }
+    }
+    
+    //Add a temporary cow at the position we found
+    ans++;
+    grid[nr][nc] = 2;
+    
+    //If this new cow has exactly 3 neighbours, call a dfs to it.
+    if (neighbours(nr, nc) == 3) {
+        dfs(nr, nc);
+    }
+    
+    //Check each of the neighbours. If any of them are cows with exactly 3 neighbours, call a dfs.
+    for (ll k = 0; k < 4; k++) {
+        ll nrr = nr + dr[k];
+        ll ncc = nc + dc[k];
+        
+        if (nrr >= 0 && nrr < MAXVAL && ncc >= 0 && ncc < MAXVAL) {
+            if (grid[nrr][ncc] != 0 && neighbours(nrr, ncc) == 3) {
+                dfs(nrr, ncc);
+            }
+        }
+    }
+}
+
+
+//Algorithm: When we read in cow i, we can update our answer from the first i - 1 cows and use that information to get the answer for cow i. Note that when we add a cow to a position (a, b), it only affects position (a, b) itself and all of its neighbours.
+
+void solve(ll ca)
+{
+    cin >> n;
+
+    for (ll i = 0; i < n; i++) {
+        ll a, b;
+        cin >> a >> b;
+        a--; b--;
+        
+        a+=(MAXVAL/2); b+=(MAXVAL/2); //Since coordinates can be negative, we will scale up the coordinates
+        
+        //If the current position had been used by an additional cow, than we can remove that additional cow. Then since the positions of all the cows has stayed the same, we know that we don't need to do anything else.
+        if (grid[a][b] == 2) {
+            ans--;
+            cout << ans << endl;
+            continue;
+        }
+        
+        //We'll mark the current location as being used by a permanent cow
+        grid[a][b] = 1;
+        
+        //If the current cell has exactly 3 neighbours, then call a dfs at this cell in order to fix it
+        if (neighbours(a, b) == 3) {
+            dfs(a, b);
+        }
+        
+        //Iterate over all 4 neighbours. If any of them are also cows who have exactly 3 neighbours after the addition of the latest cow, then we'll call a dfs on them too
+        for (ll k = 0; k < 4; k++) {
+            ll nr = a + dr[k];
+            ll nc = b + dc[k];
+            
+            if (nr >= 0 && nr < MAXVAL && nc >= 0 && nc < MAXVAL) {
+                if (grid[nr][nc] != 0 && neighbours(nr, nc) == 3) {
+                    dfs(nr, nc);
+                }
+            }
+        }
+        
+        //Print the current answer
+        cout << ans << endl;
+    }
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    /*
+    freopen("mooyomooyo.in", "r", stdin);
+    freopen("mooyomooyo.out", "w", stdout);
+    */
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
+//listen to mall song
