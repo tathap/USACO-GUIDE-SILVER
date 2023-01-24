@@ -1,0 +1,221 @@
+USACO 2017 February Contest, Silver
+Problem 3. Why Did the Cow Cross the Road III
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 105;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n, k, r;
+ll visited[101][101]; //Will store the connected component each field is in, or -1 if it's not in any
+set<pair<ll, ll>> roads[101][101]; //roads[i][j] will store a set of all other fields that are connected with a road
+
+vector<pair<ll, ll>> cows; //Stores the cows
+
+ll dr[4] = {0, 1, 0, -1};
+ll dc[4] = {1, 0, -1, 0};
+
+ll co; //Global counter that indicates the current connected component id we are on
+
+void dfs(ll r, ll c) {
+    if (visited[r][c] != -1) {
+        return;
+    }
+    visited[r][c] = co;
+    
+    for (ll i = 0; i < 4; i++) {
+        ll nr = r + dr[i];
+        ll nc = c + dc[i];
+        
+        if (nr >= 0 && nr < n && nc >= 0 && nc < n) {
+            if (roads[r][c].find({nr, nc}) == roads[r][c].end()) {
+                dfs(nr, nc);
+            }
+        }
+    }
+}
+
+//Idea: Let's floodfill on the grid of fields. A set of fields are said to be in the same connected component if you can go from any pair of fields in the component without using any roads. We can compute this with dfs
+
+void solve(ll ca)
+{
+    //Read in input
+    cin >> n >> k >> r;
+    
+    for (ll i = 0; i < r; i++) {
+        ll a, b, c, d;
+        cin >> a >> b >> c >> d;
+        a--; b--; c--; d--;
+        roads[a][b].insert({c, d});
+        roads[c][d].insert({a, b});
+    }
+    
+    for (ll i = 0; i < k; i++) {
+        ll a, b;
+        cin >> a >> b;
+        a--; b--;
+        cows.push_back({a, b});
+    }
+    
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < n; j++) {
+            visited[i][j] = -1;
+        }
+    }
+    
+    //Set the current component id to 0
+    co = 0;
+    
+    //Find all the connected components
+    for (ll i = 0; i < n; i++) {
+        for (ll j = 0; j < n; j++) {
+            if (visited[i][j] == -1) {
+                dfs(i, j);
+                co++;
+            }
+        }
+    }
+    
+    //Iterate over all distinct pairs of cows. If cow i and cow j are in different connected components, that means you can't travel between them without crossing at least one road.
+    ll ans = 0;
+    for (ll i = 0; i < k; i++) {
+        for (ll j = i+1; j < k; j++) {
+            if (visited[cows[i].first][cows[i].second] != visited[cows[j].first][cows[j].second]) {
+                ans++;
+            }
+        }
+    }
+    
+    cout << ans << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    freopen("countcross.in", "r", stdin);
+    freopen("countcross.out", "w", stdout);
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
+//listen to mall song
