@@ -1,0 +1,208 @@
+USACO 2020 February Contest, Silver
+Problem 3. Clock Tree
+
+Code:
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
+
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 3e4;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+/*
+ 
+ll maxsearch(ll lo, ll hi)
+{
+    lo--;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo + 1)/2;
+ 
+        if (works(mid)) {
+            lo = mid;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    
+    return lo;
+}
+ 
+ll minsearch(ll lo, ll hi)
+{
+    hi++;
+    while (lo < hi) {
+        ll mid = lo + (hi - lo)/2;
+        if (works(mid)) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    
+    return lo;
+}
+ */
+
+ll n;
+vector<ll> adj[MAXN];
+
+ll amount[MAXN];
+bool col[MAXN];
+
+//Get the bipartite matching of a graph/tree
+void dfs(ll node, ll par, bool co) {
+    col[node] = co;
+    for (auto el: adj[node]) {
+        if (el == par) {
+            continue;
+        }
+        dfs(el, node, !co);
+    }
+}
+
+//Algorithm: Since we aren't able to find any bashy dfs based graph traversal algorithms, let's step back and think about this from a more mathy perspective.
+//Let's find a bipartite coloring of this graph. Since the graph is a tree, we are guaranteed to have 1.
+//Our end state is a tree where all the nodes are set to 12. Notice that if we fix our ending node and reverse Bessie's moves from that node, we will have an invariant. This invariant is the difference of the sum of all the values of nodes with color 1 and the sum of all the values of nodes with color 2. This invariant will either be 0, 1, or -1 since Bessie will always be moving from a node with color 0 to a node with color 1.
+//Note that the goal invariant for any tree where all the nodes have a value of 12 is 0 modulo 12.
+//If this invariant modulo 12 is congruent to 0, then we can start from any node and have some arrangement of moves to make all the nodes 12. If the invariant modulo 12 is congruent to 1, then we need to start from any node with color 1. This is b/c we can always force a node with color 2 to be increased. This will decrease the overall invariant to 0 modulo 12.
+//If the invariant modulo 12 is congruent to -1 (11), than by similar logic, we need to start from any node with color 0. Otherwise, there is no solution b/c it will be impossible to overcome any larger gap.
+void solve(ll ca)
+{
+    //Read in input
+    cin >> n;
+    for (ll i = 0; i < n; i++) {
+        cin >> amount[i];
+    }
+    for (ll i = 0; i < n-1; i++) {
+        ll a, b;
+        cin >> a >> b;
+        a--; b--;
+        adj[a].push_back(b);
+        adj[b].push_back(a);
+    }
+    
+    //Run bipartite matching algorithm
+    dfs(0, -1, true);
+    
+    //Compute the invariant and the number of nodes of each type
+    ll inv = 0;
+    ll c1 = 0; ll c2 = 0;
+    
+    for (ll i = 0; i < n; i++) {
+        if (col[i]) {
+            inv+=amount[i];
+            c1++;
+        } else {
+            inv-=amount[i];
+            c2++;
+        }
+    }
+    
+    
+    //Compute the inverse modulo 12, accounting for negative numbers
+    inv = (inv + 12000000)%12;
+
+    //Follow the rules described above
+    if (inv == 0) {
+        cout << n << endl;
+    } else if (inv == 1) {
+        cout << c1 << endl;
+    } else if (inv == 11) {
+        cout << c2 << endl;
+    } else {
+        cout << 0 << endl;
+    }
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
+    freopen("clocktree.in", "r", stdin);
+    freopen("clocktree.out", "w", stdout);
+    
+    
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
