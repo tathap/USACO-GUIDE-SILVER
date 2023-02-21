@@ -1,0 +1,200 @@
+E. Connected Components?
+Educational Codeforces Round 37 (Rated for Div. 2)
+
+Code:
+//#include <bits/stdc++.h>
+//#include <ext/pb_ds/assoc_container.hpp>
+//using namespace __gnu_pbds;
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <stack>
+#include <queue>
+#include <math.h>
+#include <set>
+#include <map>
+#include <string>
+#include <tuple>
+#include <numeric>
+#include <climits>
+#include <bitset>
+#include <iomanip>
+#include <random>
+#include <ctime>
+
+using namespace std;
+
+//change the long long to int if you need to save memory/time really badly
+typedef long long ll;
+
+//Comment this define when working on interactive problems
+#define endl "\n"
+#define sqrt(n) sqrt((long double) n)
+
+const ll MAXN = 2e5 + 5;
+const ll ZER = 0;
+const ll ONE = 1;
+const ll INF = LLONG_MAX;
+const ll MOD = 1e9 + 7;
+
+ll min(ll a, ll b) {
+    if (a < b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+ 
+ll max(ll a, ll b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+ll mod(ll num) {
+    return (num >= MOD ? num % MOD : num);
+}
+
+ll __gcd(ll a, ll b) {
+    if (b == 0) {
+        return a;
+    }
+    
+    if (a == 0) {
+        return b;
+    }
+    
+    if (a < b) {
+        swap(a, b);
+    }
+    
+    return __gcd(b, a % b);
+}
+
+ll __lcm(ll a, ll b) {
+    ll prod = a*b;
+    return prod/__gcd(a, b);
+}
+
+ll powmod(ll a, ll b){
+    a %= MOD;
+    if (a == 0) return 0;
+    ll product = 1;
+    while(b > 0){
+        if (b&1){    // you can also use b % 2 == 1
+            product *= a;
+            product %= MOD;
+            --b;
+        }
+        a *= a;
+        a %= MOD;
+        b /= 2;    // you can also use b >> 1
+    }
+    return product;
+}
+
+
+//calculates the inverse of a number mod MOD
+ll inv(ll a) {
+    return powmod(a, MOD - 2);
+}
+
+void solve(ll ca)
+{
+    ll n, m;
+    cin >> n >> m;
+    
+    //adj[i] stores a set of all nodes that node i isn't directly connected to
+    set<ll> adj[n];
+    set<ll> visited; //stores a set of nodes yet to be visited
+    
+    //Read in the input
+    for (ll i = 0; i < m; i++) {
+        ll x, y;
+        cin >> x >> y;
+        adj[x-1].insert(y-1);
+        adj[y-1].insert(x-1);
+    }
+    
+    //Initially, all the nodes are unvisited
+    for (ll i = 0; i < n; i++) {
+        visited.insert(i);
+    }
+    
+    //Will store the sizes of all the components
+    vector<ll> ans;
+    for (ll i = 0; i < n; i++) {
+        //If the current node has already been found, move on
+        if (visited.find(i) == visited.end()) {
+            continue;
+        }
+        
+        //Run a bfs and store the count of the current component
+        ll cnt = 0;
+        queue<ll> q;
+        q.push(i);
+        
+        //We can mark i as visited
+        visited.erase(i);
+        
+        while (!q.empty()) {
+            ll cur = q.front();
+            q.pop();
+            cnt++; //Increase the size of the component by 1
+            
+            vector<ll> eras; //stores a list of all nodes who we will be able to visit and thus erase from the visited set
+            
+            //Visit each node in visited that isn't directly blocked
+            for (auto el: visited) {
+                if (adj[cur].find(el) == adj[cur].end()) {
+                    q.push(el);
+                    eras.push_back(el);
+                }
+            }
+            
+            //Delete all the nodes that we know will be visited from the set
+            for (auto el: eras) {
+                visited.erase(el);
+            }
+        }
+        
+        //Push back the size of the component
+        ans.push_back(cnt);
+    }
+    
+    //Print the answers
+    cout << ans.size() << endl;
+    sort(ans.begin(), ans.end());
+    for (auto el: ans) {
+        cout << el << " ";
+    }
+    cout << endl;
+    
+    return;
+}
+
+int main()
+{
+    //mt19937 rng(0);
+    
+    //Fast IO
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    /*
+    freopen("team.in", "r", stdin);
+    freopen("team.out", "w", stdout);
+    */
+    ll t = 1;
+    //cin >> t;
+
+    ll co = 1;
+    while (t--) {
+        solve(co);
+        ++co;
+    }
+}
+
+//Always write your algorithm down on a piece of paper and question EACH and EVERY step if you aren't able to find an implementation mistake in your code.
